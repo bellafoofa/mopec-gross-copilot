@@ -1,41 +1,41 @@
-# Mopec Gross Tissue Copilot — Free Shared Demo v7
+# LTU / Mopec Gross Tissue Copilot — Cloudflare Worker fix (v7.1)
 
-**LTU Biomedical Engineering student research project — independent prototype, not Mopec/Cortex production software.**
+**This is the Worker-compatible version of the already published Mopec gross specimen demo.** It keeps the clean UI, real CDC gross specimen, draft SOP library, color-based foreground mask, editing controls, and shared Clippy. Its backend now works on **Cloudflare Workers** (the `*.workers.dev` domain), not Pages Functions. It uses **Groq Free** with an image-capable `qwen/qwen3.8-27b` model.
 
-A GitHub-ready, no-install gross tissue review demonstrator:
-- Macroscopic gross specimen viewer using a real public-domain CDC photograph
-- Local foreground-mask suggestion and manual brush/erase
-- Seven LTU/Mopec student SOP drafts, with research checklists
-- Optional live multimodal Clippy through **NVIDIA Nemotron 3.5 Super VL (free)** on OpenRouter
-- Cloudflare Pages Functions to protect **one** project API key from browser users
-- Offline/local guidance when AI is not connected or free quota runs out
+## Files to upload to GitHub
 
-## Start here
+Upload **the contents of this folder**, preserving this structure:
 
-**Read [PUBLISH_ON_GITHUB.md](PUBLISH_ON_GITHUB.md).**
+```
+docs/
+  index.html
+  config.js
+  research_guides.js
+functions/
+  guides.js
+src/
+  worker.js
+wrangler.jsonc
+package.json
+README.md
+PUBLISH_ON_GITHUB.md
+RESEARCH_SOP_DRAFTS.md
+tests/
+  worker.test.mjs
+```
 
-The live demo link only becomes available **after you publish this repository to GitHub and deploy the linked Cloudflare Pages project**. A GitHub Pages-only build runs the browser demo without live AI.
+No API key is inside the source code. No Python or API key is needed for visitors.
 
-## Why this AI?
+## Quick verification
 
-`nvidia/nemotron-3.5-super-vl:free` is an OpenRouter model with image+text input and zero token pricing. Free account usage is rate-limited and the service can change or temporarily become unavailable. It is **not** trained/validated as a pathology diagnostic device. Public or specifically authorized research images only; NVIDIA's free endpoint can log inputs.
+- After GitHub upload and Worker build: `/api/health` should return JSON (not a 404).
+- After setting `GROQ_API_KEY` as a Cloudflare Worker secret and deploying: `/api/health` should show `"configured": true`.
+- Only a successful Clippy image-question test proves the external AI model is responding. `configured: true` confirms only that the key is present.
 
-## Run tests (developers)
+Read `PUBLISH_ON_GITHUB.md` for step-by-step directions for the existing worker.
 
-Node.js 20+: `npm test`
+## Technical limitations
 
-Tests mock OpenRouter responses because the repository intentionally **does not contain an API key**. A true end-to-end cloud test requires deployment.
+This is a public **research demonstrator**, not a secured clinical workstation. Groq's free model quotas apply to the entire project; public traffic can exhaust the shared key. The embedded source labels are from CDC metadata, not predicted diseases. Clippy can describe tentative findings but is not a trained or calibrated disease classifier. Seven workflow protocols are explicitly marked LTU **student drafts**, not hospital-approved guidance. Do not upload patient data.
 
-## Project files
-
-- `docs/`: the browser application and student SOP listing
-- `functions/api/ask.js`: private-key backend to query free vision AI and provide research citation metadata
-- `functions/api/specimen.js`: proxy for public CDC gross specimen thumbnail
-- `functions/api/health.js`: nonsecret runtime status
-- `functions/guides.js`: bundled research drafts used by the backend
-- `RESEARCH_SOP_DRAFTS.md`: consolidated draft library
-- `PUBLISH_ON_GITHUB.md`: step-by-step GitHub + Cloudflare instructions
-
-## Clinical and IP boundaries
-
-No patient or restricted hospital data. This is not an authenticated clinical system. Historical public image captions are source labels, not AI diagnoses. Do not infer tumor grade/stage or confidence from AI narrative. CAP links identify external educational references, not an official CAP endorsement of the drafts. Repo software is a student research prototype for future Mopec UI and CaptureDx discussions.
+Run local unit tests with `npm test` (Node.js 20+). Live Groq connectivity requires an account key and successful deployment.
