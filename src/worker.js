@@ -29,7 +29,18 @@ export function retrieveGuides(q){
   }).filter(x=>x.n>0&&(qs.length<2||x.ratio>=.4)).sort((a,b)=>b.n-a.n).slice(0,2).map(x=>x.g);
 }
 function normalizeContent(raw){if(typeof raw==='string')return raw.trim();if(Array.isArray(raw))return raw.map(x=>x?.text||'').join('\n').trim();return '';}
-function badQuestion(q){return /\b(diagnose this|diagnosis of this|grade this|stage this|what stage|is this malignant|is this benign|definitively cancer|prescribe|treat my patient)\b/i.test(q);}
+function organMismatch(source,proposed){
+  const pairs=[
+    {name:'kidney',yes:/\b(kidney|kidneys|renal|nephrectomy)\b/i,no:/\b(lung|lungs|pulmonary|brain|cerebral|liver|hepatic)\b/i},
+    {name:'lung',yes:/\b(lung|lungs|pulmonary|pneumonectomy)\b/i,no:/\b(kidney|kidneys|renal|brain|cerebral|liver|hepatic)\b/i},
+    {name:'liver',yes:/\b(liver|hepatic|hepatectomy)\b/i,no:/\b(kidney|kidneys|renal|brain|cerebral|lung|pulmonary)\b/i},
+    {name:'brain',yes:/\b(brain|cerebral|cerebellum)\b/i,no:/\b(kidney|kidneys|renal|lung|pulmonary|liver|hepatic)\b/i},
+  ];
+  const p=pairs.find(x=>x.yes.test(source));if(!p)return null;
+  const sample=String(proposed||'').slice(0,400);
+  return p.no.test(sample)&&!p.yes.test(sample)?p.name:null;
+}
+function badQuestion(q){return /\b(definitively cancer|prescribe|treat my patient|give definitive diagnosis)\b/i.test(q);}
 export async function ask(request,env,fetcher=fetch){
   if(request.method!=='POST')return json({error:'POST required'},405);
   const origin=request.headers.get('Origin');
@@ -64,6 +75,12 @@ export async function ask(request,env,fetcher=fetch){
     }
     const content=normalizeContent(data?.choices?.[0]?.message?.content);
     if(!content)return json({error:'AI returned no usable text. Try a smaller question or switch to SOP guidance.',type:'empty_response',sources:citations},503);
+    const disagreement=image?organMismatch(source,content):null;
+    if(disagreement)return json({
+      answer:'**Image–source disagreement**\n- The selected specimen is source-labeled as '+disagreement+'.\n- The AI described anatomy that does not match this label. Its description is being withheld rather than reported as a finding.\n- Please check the source image and repeat the review or escalate to the PA/pathologist.',
+      type:'source_mismatch',model:data.model||model,sources:citations,has_image:true,
+      warning:'AI organ description conflicts with source metadata'
+    });
     return json({answer:content,type:'ai_research',model:data.model||model,sources:citations,has_image:!!image,limits:'Research output, not calibrated diagnostic confidence or definitive diagnosis.'});
   }catch(e){return json({error:'The AI model timed out or was unavailable. Your image viewer and SOP guides still work.',type:'provider_timeout',sources:citations},503)}
 }
@@ -102,6 +119,8 @@ export async function vision(request,env,fetcher=fetch){
       const [x,y,w,h]=values;if(w<15||h<15||x<0||y<0||x>1000||y>1000)return null;
       return {id:'F'+(i+1),label:safeText(p.label,80),category:'Preliminary region',rationale:safeText(p.rationale,220),box:[x,y,Math.min(w,1000-x),Math.min(h,1000-y)],confidence:pct(p.visual_support_pct),confidence_kind:'uncalibrated AI-rated visual support, not diagnosis likelihood',review:'Pending expert review'};
     }).filter(Boolean):[];
+    const mismatch=organMismatch(note,parsed.organ_hypothesis);
+    if(mismatch){parsed.quality_flags=[...(Array.isArray(parsed.quality_flags)?parsed.quality_flags:[]),'Organ hypothesis conflicts with the selected specimen source'];parsed.organ_hypothesis='Uncertain (source conflict)';parsed.organ_visual_support_pct=null;parsed.possible_considerations=[];parsed.candidates=[];}
     const considerations=Array.isArray(parsed.possible_considerations)?parsed.possible_considerations.slice(0,3).map(p=>({label:safeText(p.label,95),rationale:safeText(p.rationale,240),visual_support_pct:pct(p.visual_support_pct),score_kind:'AI visual support estimate — uncalibrated'})).filter(p=>p.label):[];
     return json({status:'preliminary',model:data.model||req.model,task:'gross-image feature proposal',organ_visual_support_pct:pct(parsed.organ_visual_support_pct),possible_considerations:considerations,organ_hypothesis:safeText(parsed.organ_hypothesis,80),morphology:safeText(parsed.morphology,500),quality_flags:Array.isArray(parsed.quality_flags)?parsed.quality_flags.slice(0,4).map(x=>safeText(x,100)):[],candidates:proposals,suggested_next_review:safeText(parsed.suggested_next_review,250),confidence:'Not calibrated',source:note});
   }catch(e){return json({error:'Vision service timed out or failed; local tissue isolation remains available.',type:'provider_timeout'},503)}
