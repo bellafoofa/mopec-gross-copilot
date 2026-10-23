@@ -47,13 +47,14 @@ if(hist){const observer=new MutationObserver(()=>{
  }
 });observer.observe(hist,{childList:true});}
 async function loadCatalog(){
- try{const r=await fetch('/api/catalog');if(!r.ok)throw Error('Catalog unavailable');library=await r.json();
+ try{const r=await fetch('/api/catalog');if(!r.ok)throw Error('Catalog unavailable');library=await r.json();if(!selected)selected=library.find(x=>x.id==='kidney-cysts')||null;
  const grid=$('#librarygrid');grid.innerHTML='';
  for(const item of library){
   const el=document.createElement('article');el.className='library-card';
   el.innerHTML='<div class="tiny">'+escapeHTML(item.organ)+' · '+escapeHTML(item.group)+'</div><h3>'+escapeHTML(item.name)+'</h3><small>'+escapeHTML(item.origin)+' · '+escapeHTML(item.license)+'</small><div class="button-row"><button type="button">Open specimen</button><a target="_blank" rel="noopener noreferrer">Original source ↗</a></div>';
   el.querySelector('a').href=item.url;el.querySelector('button').onclick=()=>openSpecimen(item);grid.appendChild(el);
  }
+ const more=document.createElement('div');more.className='notice';more.innerHTML='<b>Research dataset directories</b><p><a target="_blank" rel="noopener" href="https://zenodo.org/records/20647553">Gross brain slab images + paired manual masks</a> · <a target="_blank" rel="noopener" href="https://apps.pathology.jhu.edu/specimen-images/">Johns Hopkins specimen gallery</a> · <a target="_blank" rel="noopener" href="https://peir.path.uab.edu/library/index.php?/category/2">UAB PEIR Gross</a> · <a target="_blank" rel="noopener" href="https://webpath.med.utah.edu/">Utah WebPath</a></p><small>Verify training/reuse permissions. Only paired, expert-reviewed masks count as ground truth.</small>';grid.after(more);
  }catch(e){$('#librarygrid').textContent='Image library unavailable. You can still open a local image.';}
 }
 async function openSpecimen(item){
