@@ -36,3 +36,16 @@ test('unknown catalog image does not fetch arbitrary URL',async()=>{
  const r=await worker.fetch(make('/api/specimen?id=https://attacker.example/'),{});
  assert.equal(r.status,404);
 });
+
+test('vision reports subjective percent scores without claiming diagnostic calibration',async()=>{
+ const fake=async()=>Response.json({model:'qwen/qwen3.8-27b',choices:[{message:{content:JSON.stringify({
+  morphology:'A rounded tan focus is visually distinguishable',organ_hypothesis:'Kidney',organ_visual_support_pct:84,
+  quality_flags:[],possible_considerations:[{label:'Focal neoplasm pattern',rationale:'Gross color contrast',visual_support_pct:62}],
+  candidates:[{label:'Tan nodule',rationale:'Round focal region',visual_support_pct:71,box:[200,200,180,240]}],
+  suggested_next_review:'Correlate with gross description and available pathology findings'
+ })}}]});
+ const r=await vision(make('/api/vision','POST',{image:photo,source:'Kidney gross specimen'}),{GROQ_API_KEY:'PRIVATE'},fake);
+ const d=await r.json();assert.equal(r.status,200);assert.equal(d.organ_visual_support_pct,84);
+ assert.equal(d.possible_considerations[0].visual_support_pct,62);assert.equal(d.candidates[0].confidence,71);
+ assert.ok(d.candidates[0].confidence_kind.includes('not diagnosis likelihood'));assert.equal(d.confidence,'Not calibrated');
+});
