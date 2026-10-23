@@ -41,3 +41,9 @@ test('Groq 429 produces safe error',async()=>{
 test('rejects requests from another origin',async()=>{
  const r=await ask(new Request(host+'/api/ask',{method:'POST',headers:{'Origin':'https://evil.example'},body:JSON.stringify({question:'Describe image'})}),{GROQ_API_KEY:'TEST'},async()=>{throw Error('must not reach');});assert.equal(r.status,403);
 });
+
+test('Clippy flags an organ-source mismatch instead of reporting hallucinated anatomy',async()=>{
+ const fakeFetch=async()=>Response.json({model:'qwen/qwen3.8-27b',choices:[{message:{content:'Both lungs show focal cysts and bronchial changes.'}}]});
+ const r=await ask(req('/api/ask','POST',{question:'Describe the visible specimen',source:'Polycystic kidneys — CDC',image:'data:image/jpeg;base64,/9j/AA=='}),{GROQ_API_KEY:'TEST_PRIVATE'},fakeFetch);
+ const d=await r.json();assert.equal(r.status,200);assert.equal(d.type,'source_mismatch');assert.ok(d.answer.includes('source-labeled as kidney'));
+});
