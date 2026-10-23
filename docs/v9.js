@@ -61,7 +61,7 @@ async function sendQuestion(e){
  input.value='';append(q,'user');const loading=append('Analyzing the current image and source material…','pending');
  activeRequest=new AbortController();send.disabled=true;progress.textContent='Thinking…';openChat();
  try{const image=capture(),context=analysis?{organ:analysis.organ_hypothesis,findings:analysis.candidates?.map(f=>({label:f.label,visual_support_pct:f.confidence})),considerations:analysis.possible_considerations?.map(f=>({label:f.label,visual_support_pct:f.visual_support_pct}))}:null;
-  const body={question:q,image,source:source?.name||$('#subtitle')?.textContent||'Unverified gross specimen',conversation:turns.slice(-6),preliminary_analysis:context};
+  const body={question:q,image,source:(source?.name?source.name+' · '+(source.organ||''):(($('#title')?.textContent||'Unknown specimen')+' · '+($('#subtitle')?.textContent||''))).slice(0,180),conversation:turns.slice(-6),preliminary_analysis:context};
   const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(62000)});
   let data;try{data=await r.json();}catch{throw Error('Server returned an unreadable response.');}
   loading.remove();if(!r.ok){append(data.error||'Clippy is temporarily unavailable. Please retry.','assistant');progress.textContent='Service unavailable';$('#aiStatus').textContent='Service unavailable';return;}
