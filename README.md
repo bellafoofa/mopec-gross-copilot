@@ -2,6 +2,22 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v9 — Interactive Clippy and preliminary scored findings
+
+**Already published to the existing Cloudflare Worker.** No browser API key, Python installation, or reinstallation is necessary.
+
+1. Open the website and choose a specimen in **Library**, or **Open image** for a local approved gross photograph.
+2. Select **Analyze**. The color-based tissue/background boundary is drawn and a separate Groq vision request proposes focal regions, organ identity, and gross-morphology considerations.
+3. The results bar includes **subjective AI visual-support percentages** where the model can provide them. These are *not calibrated disease probabilities or validated tumor diagnoses*. When the photograph cannot support a meaningful score, the UI shows N/A.
+4. Preliminary focal bounding boxes appear over the photograph. A localized color-similarity highlight is generated from the first region; it is not an expert lesion mask. Brush/Erase still edit the foreground layer.
+5. Click **Clippy** in the top bar to open a right-side question-and-answer panel; click again, press Escape, or click × to close. Clippy supports continued questions and renders Markdown headers, bullet lists, and cited draft SOP references.
+6. Record **Accepted / Edited / Rejected** with a reviewer note; export the image PNG or a review JSON.
+
+**Model governance:** The backend checks whether the generated organ identification conflicts with the selected specimen's source label and flags mismatch rather than accepting it as a medical finding. Human review and model benchmarking with expert labels remain essential. The prototype is not validated for patient-care diagnosis.
+
+**AI availability:** Free Groq inference depends on the provider's quota and model availability. The public key is stored as the Cloudflare Worker runtime secret `GROQ_API_KEY`, never in the repository.
+
+---
 ## What is in v8
 
 - Flat imaging-first workstation with horizontal navigation, optional Clippy panel, light/dark toggle and improved Markdown rendering.
