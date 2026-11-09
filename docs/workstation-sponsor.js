@@ -121,7 +121,7 @@ function trainingManifest(){
   expert_ground_truth_available:false,ground_truth_mask:null,split:'unassigned — split by specimen/case',
   image_qc:S.qc||null,
   model_proposals:(S.analysis?.candidates||[]).map((c,i)=>({id:'F'+(i+1),label:c.label,box_normalized:c.box,model_visual_support_pct:c.confidence??null,review:S.reviewDecisions[i]||'Pending',expert_mask:false})),
-  pa_evidence:S.priorityChecks||{},manual_annotations:{stroke_paths:S.strokes,measurements_px:S.measures,operator_calibration:S.calibration||null,reviewed_polygons:S.polygons||[]},evaluation:{manual_polygon_mask_overlap:S.maskValidation||null,reviewer_model_feedback:S.feedback||{},image_view_completeness:S.viewChecks||{},qc_reviewed:!!S.qcAcknowledged},
+  pa_evidence:S.priorityChecks||{},manual_annotations:{stroke_paths:S.strokes,measurements_px:S.measures,operator_calibration:S.calibration||null,reviewed_polygons:S.polygons||[]},evaluation:{manual_polygon_mask_overlap:S.maskValidation||null,seed_mask_overlap:S.segmentationValidation||null,experimental_seed_mask:S.experimentalSegmentation||null,reviewer_model_feedback:S.feedback||{},image_view_completeness:S.viewChecks||{},qc_reviewed:!!S.qcAcknowledged},
   reviewer_conclusion:S.reviewDecision||'Pending',notes:S.notes,
   caveat:'Image itself not included; export has no expert-validated masks, diagnosis or permission to train. Not suitable as a gold-standard sample.'
  };
