@@ -47,7 +47,7 @@ function renderGuides(){
  if(!out.childElementCount)out.innerHTML='<div class="empty-data">No matching research guide found. Check your institution-approved SOP.</div>';
 }
 async function health(){
- try{const r=await fetch('/api/health',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();const label=d.configured?(String(d.provider||'AI')+' · ready'):'AI not configured';$('#modelStatus').textContent=label;$('#clippyConnection').textContent=label;$('#modelHealth').textContent=d.configured?'Configured':'Not configured';$('#activeModel').textContent=(d.provider||'Groq')+' / '+(d.model||'Unspecified');}
+ try{const r=await fetch('/api/health',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();const label=d.configured?((d.model_mode==='cloudflare'?'Mistral AI':String(d.provider||'AI'))+' · ready'):'AI not configured';$('#modelStatus').textContent=label;$('#clippyConnection').textContent=label;$('#modelHealth').textContent=d.configured?'Configured':'Not configured';$('#activeModel').textContent=(d.provider||'Groq')+' / '+(d.model||'Unspecified');}
  catch{$('#modelStatus').textContent='AI offline';$('#clippyConnection').textContent='Unavailable';$('#modelHealth').textContent='Unavailable';}
 }
 function initWorkflow(){
