@@ -22,7 +22,7 @@ function updateRibbon(){
   guidance:['Source-based reference','Read draft guidance, verify references, and return to your case.','review','PA review'],
   models:['Evaluate model and data readiness','Compare reviewer annotations with paired ground truth or another model output.','analysis','Back to image']
  };
- const [head,note,next,label]=stateMap[state]||stateMap.analysis;el.textContent=head;sub.textContent=note;btn.textContent=label+' →';btn.onclick=()=>M.nav(next);
+ let [head,note,next,label]=stateMap[state]||stateMap.analysis;if(state==='review'&&document.body.classList.contains('v11-focus')){next='analysis';label='Back to image';}el.textContent=head;sub.textContent=note;btn.textContent=label+' →';btn.onclick=()=>M.nav(next);
 }
 function renderTimeline(){
  const root=$('#v11Timeline');if(!root)return;const events=(S.reviewEvents||[]).slice(-15).reverse();
@@ -90,7 +90,7 @@ function exportOps(){return{reviewer_feedback:S.feedback||{},compare_model:compa
 function focusToggle(){
  const focused=document.body.classList.toggle('v11-focus');$('#v11Focus').textContent=focused?'Full tools':'Focus tools';
  $('#v11Focus').setAttribute('aria-pressed',String(focused));try{localStorage.setItem('mopec-ui-focus',focused?'1':'0');}catch{}
- toast(focused?'Focused PA view: research/admin options hidden.':'Full research tools visible.');
+ updateRibbon();toast(focused?'Focused PA view: research/admin options hidden.':'Full research tools visible.');
 }
 function help(){
  const dlg=$('#v11HelpDialog');if(typeof dlg.showModal==='function')dlg.showModal();
