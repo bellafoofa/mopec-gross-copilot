@@ -140,6 +140,15 @@
        <div class="ref-item"><h3>Offline / hospital deployment</h3><p>Future work requires local inference, workstation authentication, storage controls and sponsor-approved data flows. Browser speech transcription may require external services.</p></div>
       </section>
     </div>
+    <section class="panel" style="margin-top:18px;max-width:1000px">
+      <div class="section-head"><h2>PA usability walkthrough</h2><span class="case-pill">Local measurement tool</span></div>
+      <p class="muted" style="font-size:12px">Record time and button interactions for one public/synthetic training task. Compare manual and AI-assisted workflows using the same task definition.</p>
+      <div class="searchrow" style="margin:13px 0"><input id="studyTask" placeholder="Task, e.g. review candidate regions"><select id="studyMode"><option value="manual">Manual workflow</option><option value="ai_assisted">AI-assisted workflow</option></select></div>
+      <div class="flex"><button id="studyStart" class="btn primary" type="button">Start task</button><button id="studyStop" class="btn" type="button" disabled>Stop</button><span class="case-pill" id="studyStatus">Not running</span><span class="muted" id="studyMetrics" style="font-size:11px">—</span></div>
+      <div class="field" style="margin-top:14px"><label for="studyNotes">Observed friction / use errors</label><textarea id="studyNotes" rows="2" placeholder="Missed controls, extra clicks, PA feedback, recovery steps…"></textarea></div>
+      <div class="flex"><button id="studyError" class="btn small" type="button" disabled>Add use error</button><button id="studyExport" class="btn small" type="button" disabled>Export study JSON</button></div>
+      <p class="disclaimer">No video, voice, patient details or analytics leave the browser through this recorder. This does not replace IRB/institutional approval when required for formal usability studies.</p>
+    </section>
   </section>
 </div>
 <aside id="assistant" class="assistant collapsed" aria-label="Clippy assistant">
