@@ -15,6 +15,11 @@ jobs:
         run: |
           node --check docs/v8.js
           node --check docs/v9.js
+          node --check docs/workstation-core.js
+          node --check docs/workstation-analysis.js
+          node --check docs/workstation-workflow.js
+          node --check docs/workstation-chat.js
+          node --check docs/workstation-boot.js
           node --check src/worker.js
       - name: Backend regression tests
         run: npm test
