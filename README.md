@@ -2,6 +2,16 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v13 — MiniMax / Kimi Clippy provider adapter
+
+From the November 6 sponsor model discussion, the backend now supports **MiniMax M3.1 Flash** and **Kimi K3.1 Pro** through separate, fixed, server-only multimodal API endpoints. Either can serve Clippy Q&A and preliminary gross-image proposals when the project owner supplies a private provider key; no visitor API key is required. Health and sidebar labels now show the actual selected provider.
+
+**The existing Groq key remains in place** until an alternative is activated and passes real gross-image tests. Model availability, pricing and clinical quality are not guaranteed. Do not publish a paid credential in GitHub or enable unlimited billed calls from an unprotected public site.
+
+See [secure setup, model costs and the controlled PA benchmark](CLIPPY_MODEL_SETUP.md). For the next project phase, compare models on exactly the same source-labeled gross photos with PA reviewers and independently verified region annotations.
+
+---
+
 ## v12 — Capture DX sponsor-review improvements
 
 Updated from the November 6, 2026 discussion with Mike and Roseanne and the supplied Capture DX screenshots. **No new API key or reinstallation is required.**
