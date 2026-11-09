@@ -2,6 +2,23 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v12 — Capture DX sponsor-review improvements
+
+Updated from the November 6, 2026 discussion with Mike and Roseanne and the supplied Capture DX screenshots. **No new API key or reinstallation is required.**
+
+- **Current case inspector:** a compact, collapsible case context on the right (synthetic accession, image source, QC, AI proposals, PA status, anatomy review cues). It automatically clears the image-viewing area when Clippy opens.
+- **Hands-free controls:** optional microphone push-to-talk or typed commands for opening workflow tabs, initiating analysis, viewer zoom/overlay, camera preview, synthetic barcode scanning, notes and Clippy questions. Speech recognition requires browser support and may use a remote speech provider.
+- **PA-oriented anatomy questions:** concise specimen-specific review prompts for renal sinus, fat/vascular interfaces, breast measurements/margins and prostate section mapping. Opens an editable Clippy question for follow-up, not automatic tumor staging.
+- **Clippy update:** model instructions now prioritize visible gross anatomy, needed extra views or measurements, unassessable interfaces, PA verification and cited source guidance.
+- **Handoff:** see [Nov 6 sponsor requirements and outstanding dependencies](SPONSOR_HANDOFF_V12.md). Exact MiniMax/Kimi model IDs, authorized gross images, LTU Pathologize credentials and DGX Spark access have *not* been provided; the current Groq vision service remains unchanged.
+
+### Quick commands
+Click **Hands-free** in the header, or press **Alt+Shift+V**, and type or speak "Open analysis", "Next step", "Analyze image", "Open Clippy", "Zoom in", "Dictate note …" or "Ask Clippy …". Speech runs only after user initiation; never dictate patient identifiers on this public build.
+
+**This remains a research prototype, not a clinical decision-making device.** No stage, definitive diagnostic probability, live patient records, hospital SOP approvals or offline license integration are claimed.
+
+---
+
 ## v11 — PA workflow + measurable research annotations
 
 The live Cloudflare site has been updated in place. No user installation or individual API keys are required.
