@@ -5,7 +5,7 @@
 const M=window.Mopec;if(!M)return;
 const S=M.S,$=M.$,safe=M.safe,toast=M.toast;
 const state={views:[],active:null,serial:0,localOnly:false,cassettes:[],caseId:'',qcAdvice:null,roi:null};
-const snapshotKeys=['analysis','qc','mask','strokes','measures','undoStack','selected','reviewDecisions','reviewChecks','reviewDecision','reviewer','notes','captureNotes','polygons','mmPerPixel','calibration','qcAcknowledged','qcReviewNote','viewChecks','maskValidation','gtMask','comparisonPrediction','feedback','reviewEvents','priorityChecks','consent','sourceType','source'];
+const snapshotKeys=['analysis','qc','mask','strokes','measures','undoStack','selected','reviewDecisions','reviewChecks','reviewDecision','reviewer','notes','captureNotes','polygons','mmPerPixel','calibration','qcAcknowledged','qcReviewNote','viewChecks','maskValidation','gtMask','comparisonPrediction','feedback','reviewEvents','priorityChecks','consent','sourceType','source','license','sourceUrl','imageUrl'];
 const isImg=x=>!!x&&Number.isFinite(x.naturalWidth)&&x.naturalWidth>0;
 const stamp=()=>new Date().toISOString();
 function el(id){return document.getElementById(id);}
@@ -15,15 +15,15 @@ function thumb(img){try{const c=document.createElement('canvas');c.width=156;c.h
  const scale=Math.min(146/img.naturalWidth,88/img.naturalHeight),w=img.naturalWidth*scale,h=img.naturalHeight*scale;
  k.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);return c.toDataURL('image/jpeg',.68);}catch{return ''}}
 function captureSnapshot(){const result={};for(const k of snapshotKeys)result[k]=S[k];result.image=S.image;result.imageWidth=S.imageWidth;result.imageHeight=S.imageHeight;return result;}
-function rootCase(){if(!isImg(S.image))return;const v={id:'v1',name:'Overview / original',image:S.image,width:S.imageWidth,height:S.imageHeight,thumb:thumb(S.image),kind:S.sourceType==='catalog'?'reference':'local',snapshot:captureSnapshot()};
- state.views=[v];state.active=v.id;state.serial=1;state.cassettes=[];state.caseId=S.caseId||'DEMO';S.activeViewId=v.id;renderViews();renderCassette();renderQCAdvice();setText('v14PhotoCount','1 view');}
+function rootCase(){if(!isImg(S.image)){state.views=[];state.active=null;state.cassettes=[];S.cassetteMap=[];state.caseId=S.caseId||'';renderViews();renderCassette();renderQCAdvice();return;}const v={id:'v1',name:'Overview / original',image:S.image,width:S.imageWidth,height:S.imageHeight,thumb:thumb(S.image),kind:S.sourceType==='catalog'?'reference':'local',snapshot:captureSnapshot()};
+ state.views=[v];state.active=v.id;state.serial=1;state.cassettes=[];S.cassetteMap=[];state.caseId=S.caseId||'DEMO';S.activeViewId=v.id;renderViews();renderCassette();renderQCAdvice();setText('v14PhotoCount','1 view');}
 function saveActive(){const prev=state.views.find(v=>v.id===state.active);if(prev){prev.snapshot=captureSnapshot();prev.image=S.image;prev.width=S.imageWidth;prev.height=S.imageHeight;}}
 function restoreView(view){
  if(!view)return;
  saveActive();state.active=view.id;S.activeViewId=view.id;
  if(view.snapshot){Object.assign(S,view.snapshot);}
- else{S.image=view.image;S.imageWidth=view.width;S.imageHeight=view.height;M.resetResults();}
- S.image=view.image;S.imageWidth=view.width;S.imageHeight=view.height;S.imageUrl=null;
+ else{S.image=view.image;S.imageWidth=view.width;S.imageHeight=view.height;S.imageUrl=null;S.sourceType='import';S.consent=false;S.source='Locally added case photograph';S.sourceUrl='';S.license='Permission not yet verified';M.resetResults();}
+ S.image=view.image;S.imageWidth=view.width;S.imageHeight=view.height;S.imageUrl=view.snapshot?.imageUrl||null;
  $('#canvasEmpty').classList.add('hidden');
  $('#publicConsent').checked=!!S.consent;
  M.setTitle();M.renderFindings?.();M.renderReview?.();M.renderCues?.();
@@ -253,7 +253,7 @@ function installPrivacy(){
  b.onclick=()=>setLocal(!state.localOnly);
  try{state.localOnly=sessionStorage.getItem('mopec-local-review-only')==='1';}catch{}
  const base=M.remoteAllowed;M.remoteAllowed=()=>!state.localOnly&&base();
- for(const id of ['chatForm','v12CmdMic','dictateNotes','dictateChat']){
+ for(const id of ['chatForm','v12CmdMic','dictateNotes','dictateChat','testModel']){
   const node=el(id);if(!node)continue;node.addEventListener(id==='chatForm'?'submit':'click',e=>{
     if(!state.localOnly)return;e.preventDefault();e.stopImmediatePropagation();toast('Local review only: cloud AI and browser speech are disabled. Switch modes to use them.');},true);
  }
