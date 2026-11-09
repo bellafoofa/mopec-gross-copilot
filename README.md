@@ -2,6 +2,20 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v11 — PA workflow + measurable research annotations
+
+The live Cloudflare site has been updated in place. No user installation or individual API keys are required.
+
+**What has been added:** optional focused PA layout and keyboard help; a step-aware workflow ribbon; experimental color-connected **Seed mask** segmentation with tolerance tuning and PNG export; manually drawn polygon annotations; user-entered **mm/px calibration** from a measured ruler reference; original/annotated comparison; reviewer-acknowledged QC and image completeness; correction reasons; case timeline and export; local **Dice/IoU** against an aligned user-supplied reference mask; import-only model-box comparison; and a current-case metrics panel.
+
+**What these do not mean:** The seeded mask is NOT a trained gross-tumor segmenter; a reference mask is not automatically expert-verified; subjective model percentages are not calibrated disease probabilities; and this public prototype does not assign clinical cancer stage or connect to patient records.
+
+**Quick start:** Image Library → AI Analysis → Analyze → use Polygon or Seed mask → Review & Evidence → Model correction/QC confirmation → export review JSON. Advanced tools are tucked into collapsible panels. Clippy remains a right-hand toggleable assistant and uses the existing Groq runtime key.
+
+See the [32-feature status matrix and validation instructions](FEATURE_STATUS_V11.md) for exactly what is working versus blocked pending Mopec data, model identifiers, Pathologize access, DGX Spark access and licensed hospital integration.
+
+---
+
 ## v10 — Mopec sponsor-aligned Capture & Analysis workstation
 
 **Current site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
