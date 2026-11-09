@@ -79,7 +79,7 @@ function exportRecord(){return{schema:'ltu-mopec-capture-dx-handoff/1.0',exporte
  case:M.caseMeta(),image:{native_width:S.imageWidth,native_height:S.imageHeight},qc:S.qc,model:S.analysis?.model||null,analysis:S.analysis,
  manual_annotations:{stroke_paths:S.strokes,measurements_in_pixels:S.measures,region_review:S.reviewDecisions},
  review:{decision:S.reviewDecision||'Pending',reviewer_label:S.reviewer||null,notes:S.notes,anatomic_checks:checks().map((item,i)=>({item,confirmed:!!S.reviewChecks[i]})),priority_anatomy_checks:S.priorityChecks||{},capture_notes:S.captureNotes||null,draft_description:$('#draftGross').value||null},
- additional_review:window.Mopec?.exportAdditions?.()||null,review_timeline:S.reviewEvents||[],integration_status:'Prototype export only. Not connected to Capture DX, LIS, Epic or shared audit storage. Scores are not calibrated.'}}
+ additional_review:window.Mopec?.exportAdditions?.()||null,operational_evaluation:window.Mopec?.exportOps?.()||null,review_timeline:S.reviewEvents||[],integration_status:'Prototype export only. Not connected to Capture DX, LIS, Epic or shared audit storage. Scores are not calibrated.'}}
 function draft(){
  if(!S.image){toast('Open an image first.');return}
  const verified=checks().filter((v,i)=>S.reviewChecks[i]),accepted=(S.analysis?.candidates||[]).filter((c,i)=>['Accepted','Edited'].includes(S.reviewDecisions[i]));
