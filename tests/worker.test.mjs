@@ -36,7 +36,7 @@ test('Groq image vision request uses supported format and private key',async()=>
 });
 test('Groq 429 produces safe error',async()=>{
  const r=await ask(req('/api/ask','POST',{question:'Describe this specimen'}),{GROQ_API_KEY:'TEST_PRIVATE'},async()=>Response.json({error:'secret not to leak'},{status:429}));
- const d=await r.json();assert.equal(r.status,503);assert.ok(d.error.includes('quota'));assert.ok(!JSON.stringify(d).includes('secret'));
+ const d=await r.json();assert.equal(r.status,429);assert.equal(d.type,'rate_limited');assert.ok(d.error.includes('usage limit'));assert.ok(!JSON.stringify(d).includes('secret'));
 });
 test('rejects requests from another origin',async()=>{
  const r=await ask(new Request(host+'/api/ask',{method:'POST',headers:{'Origin':'https://evil.example'},body:JSON.stringify({question:'Describe image'})}),{GROQ_API_KEY:'TEST'},async()=>{throw Error('must not reach');});assert.equal(r.status,403);
