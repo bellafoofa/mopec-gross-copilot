@@ -68,6 +68,7 @@ async function importOther(file){
  try{
   const obj=JSON.parse(await file.text()),all=Array.isArray(obj.candidates)?obj.candidates:[];
   if(!Array.isArray(obj.candidates)||all.length>80)throw Error('Expected a candidates array of at most 80 entries.');
+  if(obj.case_id&&String(obj.case_id)!==String(S.caseId))throw Error('The prediction file belongs to another case; open the matching specimen first.');
   const parsed=all.filter(c=>Array.isArray(c.box)&&c.box.length===4&&c.box.every(n=>typeof n==='number'&&Number.isFinite(n))&&c.box[2]>0&&c.box[3]>0&&c.box[0]>=0&&c.box[1]>=0&&c.box[0]+c.box[2]<=1000&&c.box[1]+c.box[3]<=1000).slice(0,30).map(c=>({label:String(c.label||'Unlabeled candidate').slice(0,90),box:c.box}));
   compare={model:String(obj.model||file.name).slice(0,100),candidates:parsed,case_id:String(obj.case_id||'unverified'),source_file:file.name};
   S.comparisonPrediction=compare;
