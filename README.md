@@ -2,6 +2,20 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v14 — Image-first Capture DX research workflow
+
+**Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
+
+New PA-facing features include an **8-image specimen view filmstrip**, original-resolution detail inspection/crop export, **side-by-side photograph comparison**, standalone **local image QC** with actionable retake suggestions, and a **section/cassette map** linking proposed section sites to views and AI/manual regions with a PA verification status. Review JSON now captures linked photo metadata, cassette mapping and local/cloud assistance mode. Draft descriptions include verified cassette records.
+
+The header's **Local review only** option blocks initiating external AI and browser speech from the UI while allowing image viewing, QC, annotations and manual review. This is not a full offline license or a hospital deployment. Additional photo views are treated as unapproved until the operator explicitly authorizes cloud use in Capture.
+
+MiniMax M3.1 Flash and Kimi K3.1 Pro adapters remain available **without switching away from Groq automatically** until owner credentials are configured and medical-image benchmarks have been completed. The model label and `/api/health` report the selected provider.
+
+**For a complete demonstration script, technical acceptance checklist, and honest dependency matrix**, see [SPONSOR_HANDOFF_V14.md](SPONSOR_HANDOFF_V14.md).
+
+---
+
 ## v13 — MiniMax / Kimi Clippy provider adapter
 
 From the November 6 sponsor model discussion, the backend now supports **MiniMax M3.1 Flash** and **Kimi K3.1 Pro** through separate, fixed, server-only multimodal API endpoints. Either can serve Clippy Q&A and preliminary gross-image proposals when the project owner supplies a private provider key; no visitor API key is required. Health and sidebar labels now show the actual selected provider.
