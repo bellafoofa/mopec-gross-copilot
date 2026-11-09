@@ -23,6 +23,7 @@ jobs:
           node --check docs/workstation-imaging-v11.js
           node --check docs/workstation-segmentation-v11.js
           node --check docs/workstation-ops-v11.js
+          node --check docs/workstation-v12.js
           node --check docs/workstation-boot.js
       - name: Workstation wiring and backend regression tests
         run: npm test
