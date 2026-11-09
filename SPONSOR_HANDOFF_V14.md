@@ -1,5 +1,7 @@
 # Mopec Capture & Analysis v14 — Sponsor handoff and test guide
 
+> **November 9, 2026 v15 update:** The deployed Clippy and Analyze image provider is now **Cloudflare Workers AI · Mistral Small 3.1**, replacing the shared rate-limited Groq default (HTTP 429). Both functions returned responses in live testing on the public CDC kidney specimen. Cloudflare daily free allocation limits still apply; this is not a validated pathology model. Earlier v14 table entries mentioning Groq are a historical snapshot and are superseded by this note. MiniMax and Kimi remain optional only when supplied an owner-managed credential. See [CLIPPY_MODEL_SETUP.md](CLIPPY_MODEL_SETUP.md).
+
 **Public research workstation:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
 **Sponsor basis:** transcript supplied by LTU team from the November 6, 2026 Mike/Roseanne meeting; provided Capture DX and offline licensing screenshots. This is an LTU student R&D prototype, not the proprietary Mopec clinical platform.
