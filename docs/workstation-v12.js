@@ -220,7 +220,7 @@ function initV12(){
  document.addEventListener('change',e=>{if(e.target.closest('#priorityChecks, #reviewChecklist, #caseSelect'))setTimeout(refreshDock,60)});
  const oldNav=M.nav;M.nav=function(...args){const result=oldNav(...args);setTimeout(refreshDock,30);return result};
  window.addEventListener('resize',()=>{if(window.innerWidth>1040)document.body.classList.remove('v12-dock-open')});
- if(window.innerWidth<=1040)document.body.classList.add('v12-dock-hidden');
+ if(window.innerWidth<=1040){document.body.classList.add('v12-dock-hidden');$('#caseDockToggle').setAttribute('aria-pressed','false');}
  if(S.image)refreshDock();
 }
 M.initV12=initV12;
