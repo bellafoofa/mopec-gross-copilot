@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const S={page:'analysis',catalog:[],guides:[],caseId:'',caseName:'',organ:'',source:'',license:'',sourceUrl:'',sourceType:'catalog',image:null,imageUrl:null,imageWidth:0,imageHeight:0,consent:false,analysis:null,qc:null,mask:null,tool:'move',zoom:1,panX:0,panY:0,overlay:true,strokes:[],measures:[],selected:-1,reviewDecisions:{},reviewChecks:{},reviewDecision:'',reviewer:'',notes:'',captureNotes:'',chatTurns:[],chatBusy:false,cameraStream:null,recognizer:null};
+const S={page:'analysis',catalog:[],guides:[],caseId:'',caseName:'',organ:'',source:'',license:'',sourceUrl:'',sourceType:'catalog',image:null,imageUrl:null,imageWidth:0,imageHeight:0,consent:false,analysis:null,qc:null,mask:null,tool:'move',zoom:1,panX:0,panY:0,overlay:true,strokes:[],measures:[],undoStack:[],selected:-1,reviewDecisions:{},reviewChecks:{},reviewDecision:'',reviewer:'',notes:'',captureNotes:'',chatTurns:[],chatBusy:false,cameraStream:null,recognizer:null};
 let toastTimer;const canvas=$('#viewCanvas'),ctx=canvas.getContext('2d',{alpha:false});
 let dimensions={scale:1,cx:0,cy:0},pointer=null;
 function toast(msg){const el=$('#toast');el.textContent=String(msg);el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),4500);}
@@ -10,7 +10,7 @@ function nav(name){S.page=name;$$('[data-nav]').forEach(b=>b.classList.toggle('a
 function step(n){for(let i=1;i<=4;i++){const el=$('#step'+i);el.classList.toggle('done',i<n);el.classList.toggle('current',i===n);}}
 function caseMeta(){return{id:S.caseId,name:S.caseName,organ:S.organ,source:S.source,source_url:S.sourceUrl,license:S.license,source_type:S.sourceType};}
 function setTitle(){ $('#caseTitle').textContent=S.caseName||'Select a specimen';$('#caseSubtitle').textContent=S.image?((S.organ||'Unknown organ')+' · '+(S.source||'Imported image')+' · '+(S.license||'Check rights')):'Open a public specimen or approved image.';$('#caseKicker').textContent='SPECIMEN REVIEW · '+(S.caseId||'NO ACTIVE CASE');$('#viewerBadge').textContent=S.image?(S.caseId||'Imported'):'No image selected';$('#imageInfo').textContent=S.image?(S.imageWidth+' × '+S.imageHeight+' px · '+S.source):'No image loaded';}
-function resetResults(){S.analysis=null;S.qc=null;S.mask=null;S.strokes=[];S.measures=[];S.selected=-1;S.reviewDecisions={};S.reviewChecks={};S.reviewDecision='';$('#qcStatus').textContent='QC not run';$('#qcBadge').textContent='Not assessed';$('#qcMetrics').textContent='Run image QC and AI analysis to see findings.';$('#qcTags').innerHTML='';$('#findCount').textContent='—';$('#annotCount').textContent='0';$('#analysisState').textContent='Awaiting analysis';$('#findings').innerHTML='<div class="empty-data">Run analysis to see visible-feature suggestions and review controls.</div>';$('#statusDot').className='pip';step(S.image?2:1);window.Mopec?.renderCues?.();draw();}
+function resetResults(){S.analysis=null;S.qc=null;S.mask=null;S.strokes=[];S.measures=[];S.undoStack=[];S.selected=-1;S.reviewDecisions={};S.reviewChecks={};S.reviewDecision='';$('#qcStatus').textContent='QC not run';$('#qcBadge').textContent='Not assessed';$('#qcMetrics').textContent='Run image QC and AI analysis to see findings.';$('#qcTags').innerHTML='';$('#findCount').textContent='—';$('#annotCount').textContent='0';$('#analysisState').textContent='Awaiting analysis';$('#findings').innerHTML='<div class="empty-data">Run analysis to see visible-feature suggestions and review controls.</div>';$('#statusDot').className='pip';step(S.image?2:1);window.Mopec?.renderCues?.();draw();}
 function remoteAllowed(){return S.sourceType==='catalog'||S.consent===true;}
 function setImage(src,objectUrl){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{if(S.imageUrl)URL.revokeObjectURL(S.imageUrl);S.image=image;S.imageUrl=objectUrl||null;S.imageWidth=image.naturalWidth;S.imageHeight=image.naturalHeight;S.zoom=1;S.panX=0;S.panY=0;$('#canvasEmpty').classList.add('hidden');setTitle();resetResults();resizeCanvas();renderQueue();resolve()};image.onerror=()=>reject(Error('Could not open image. Try another specimen or a local JPEG, PNG or WebP.'));image.src=src;});}
 async function loadSpecimen(item){
@@ -46,13 +46,22 @@ function draw(){
  if(S.overlay){
   if(S.mask){ctx.save();ctx.globalAlpha=.84;ctx.drawImage(S.mask,tl.x,tl.y,f.w,f.h);ctx.restore()}
   (S.analysis?.candidates||[]).forEach((c,i)=>{const b=c.box;if(!Array.isArray(b)||b.length!==4)return;const p=toCanvas(b[0]/1000*S.imageWidth,b[1]/1000*S.imageHeight);ctx.save();ctx.strokeStyle=i===S.selected?'#ffd36e':'#5de5db';ctx.lineWidth=i===S.selected?3:2;ctx.setLineDash([9,6]);ctx.strokeRect(p.x,p.y,b[2]/1000*S.imageWidth*f.scale,b[3]/1000*S.imageHeight*f.scale);ctx.setLineDash([]);const label='F'+(i+1)+' · '+String(c.label||'Region').slice(0,22);ctx.font='13px sans-serif';let tw=ctx.measureText(label).width+13;ctx.fillStyle='#257c83';ctx.fillRect(p.x,p.y-22,tw,21);ctx.fillStyle='#fff';ctx.fillText(label,p.x+6,p.y-7);ctx.restore();});
-  for(const s of S.strokes){if(!s.points.length)continue;ctx.beginPath();s.points.forEach((p,i)=>{const xy=toCanvas(p.x*S.imageWidth,p.y*S.imageHeight);i?ctx.lineTo(xy.x,xy.y):ctx.moveTo(xy.x,xy.y)});ctx.lineWidth=s.width;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=s.mode==='erase'?.65:1;ctx.strokeStyle=s.mode==='erase'?'#fff':s.color;ctx.stroke();ctx.globalAlpha=1}
+  for(const s of S.strokes){if(!s.points.length)continue;ctx.beginPath();s.points.forEach((p,i)=>{const xy=toCanvas(p.x*S.imageWidth,p.y*S.imageHeight);i?ctx.lineTo(xy.x,xy.y):ctx.moveTo(xy.x,xy.y)});ctx.lineWidth=s.width;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=1;ctx.strokeStyle=s.color;ctx.stroke();ctx.globalAlpha=1}
  }
  for(const m of S.measures){const a=toCanvas(m.a.x*S.imageWidth,m.a.y*S.imageHeight),b=toCanvas(m.b.x*S.imageWidth,m.b.y*S.imageHeight);ctx.strokeStyle='#ffd36e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.fillStyle='#ffd36e';ctx.font='12px sans-serif';ctx.fillText(Math.round(m.pixels)+' px', (a.x+b.x)/2,(a.y+b.y)/2-9);}
 }
 function tool(name){S.tool=name;$$('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===name));canvas.style.cursor=name==='move'?'grab':'crosshair';}
 function zoom(factor){S.zoom=clamp(S.zoom*factor,.25,7);$('#zoomPct').textContent=Math.round(S.zoom*100)+'%';draw()}
 function selectAt(p){const list=S.analysis?.candidates||[];for(let i=list.length-1;i>=0;i--){const b=list[i].box||[];const x=1000*p.x/S.imageWidth,y=1000*p.y/S.imageHeight;if(x>=b[0]&&x<=b[0]+b[2]&&y>=b[1]&&y<=b[1]+b[3])return i;}return -1}
+
+function pushUndo(){S.undoStack.push({strokes:S.strokes.map(s=>({...s,points:s.points.map(p=>({...p}))})),measures:S.measures.map(m=>({...m}))});if(S.undoStack.length>30)S.undoStack.shift();}
+function undo(){const item=S.undoStack.pop();if(!item){toast('Nothing to undo.');return}S.strokes=item.strokes;S.measures=item.measures;$('#annotCount').textContent=S.strokes.length+S.measures.length;draw();toast('Last annotation change undone.');}
+function eraseAt(norm){
+ const next=[];for(const stroke of S.strokes){let segment=[];for(const p of stroke.points){const d=Math.hypot((p.x-norm.x)*S.imageWidth,(p.y-norm.y)*S.imageHeight);
+ if(d<24){if(segment.length){next.push({...stroke,points:segment});segment=[];}}else segment.push(p)}
+ if(segment.length)next.push({...stroke,points:segment});}
+ S.strokes=next;$('#annotCount').textContent=S.strokes.length+S.measures.length;draw();
+}
 function registerViewer(){
  new ResizeObserver(()=>{if(S.page==='analysis')resizeCanvas()}).observe($('#viewer'));window.addEventListener('resize',resizeCanvas);
  $$('[data-tool]').forEach(b=>b.onclick=()=>tool(b.dataset.tool));$('#overlayToggle').onchange=e=>{S.overlay=e.target.checked;draw()};$('#zoomIn').onclick=()=>zoom(1.25);$('#zoomOut').onclick=()=>zoom(.8);
@@ -61,17 +70,22 @@ function registerViewer(){
  canvas.addEventListener('pointerdown',e=>{if(!S.image||e.button!==0)return;const mouse=eventPoint(e),pos=toImage(mouse.x,mouse.y),norm={x:clamp(pos.x/S.imageWidth,0,1),y:clamp(pos.y/S.imageHeight,0,1)};
  if(S.tool==='move'&&S.overlay){const i=selectAt(pos);if(i!==-1){S.selected=i;window.Mopec.renderFindings?.();draw();toast('Selected feature F'+(i+1));return}}
  canvas.setPointerCapture(e.pointerId);pointer={tool:S.tool,last:mouse,start:norm,stroke:null};
- if(['brush','erase'].includes(S.tool)){pointer.stroke={mode:S.tool,points:[norm],width:S.tool==='erase'?17:8,color:'#ffcb6e'};S.strokes.push(pointer.stroke);$('#annotCount').textContent=S.strokes.length+S.measures.length;draw()}
+ if(['brush','erase','measure'].includes(S.tool))pushUndo();
+ if(S.tool==='brush'){pointer.stroke={mode:'brush',points:[norm,norm],width:8,color:'#ffcb6e'};S.strokes.push(pointer.stroke);$('#annotCount').textContent=S.strokes.length+S.measures.length;draw();}
+ if(S.tool==='erase')eraseAt(norm);
  });
  canvas.addEventListener('pointermove',e=>{if(!pointer||!S.image)return;const mouse=eventPoint(e);
  if(pointer.tool==='move'){S.panX+=mouse.x-pointer.last.x;S.panY+=mouse.y-pointer.last.y;pointer.last=mouse;draw()}
  if(pointer.stroke){const p=toImage(mouse.x,mouse.y);pointer.stroke.points.push({x:clamp(p.x/S.imageWidth,0,1),y:clamp(p.y/S.imageHeight,0,1)});draw()}
+ if(pointer.tool==='erase'){const p=toImage(mouse.x,mouse.y);eraseAt({x:clamp(p.x/S.imageWidth,0,1),y:clamp(p.y/S.imageHeight,0,1)});}
  });
  canvas.addEventListener('pointerup',e=>{if(!pointer||!S.image)return;if(pointer.tool==='measure'){const pos=toImage(eventPoint(e).x,eventPoint(e).y),b={x:clamp(pos.x/S.imageWidth,0,1),y:clamp(pos.y/S.imageHeight,0,1)},a=pointer.start,len=Math.hypot((a.x-b.x)*S.imageWidth,(a.y-b.y)*S.imageHeight);if(len>3){S.measures.push({a,b,pixels:len});$('#annotCount').textContent=S.strokes.length+S.measures.length;toast('Distance '+Math.round(len)+' px. Calibrate a scale before converting to mm.');draw()}}pointer=null;});
  }
 function blobDownload(content,type,filename){const blob=content instanceof Blob?content:new Blob([content],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename.replace(/[^a-z0-9._-]/gi,'_');a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
 function exportImage(){if(!S.image){toast('Open an image first');return}const c=document.createElement('canvas');c.width=S.imageWidth;c.height=S.imageHeight;const g=c.getContext('2d');g.drawImage(S.image,0,0);
  if(S.overlay)(S.analysis?.candidates||[]).forEach(f=>{const b=f.box||[];if(b.length!==4)return;g.strokeStyle='#56d8d2';g.lineWidth=Math.max(3,S.imageWidth/350);g.strokeRect(b[0]/1000*c.width,b[1]/1000*c.height,b[2]/1000*c.width,b[3]/1000*c.height)});
+ for(const stroke of S.strokes){if(stroke.points.length<2)continue;g.beginPath();stroke.points.forEach((p,i)=>{if(i)g.lineTo(p.x*c.width,p.y*c.height);else g.moveTo(p.x*c.width,p.y*c.height)});g.lineWidth=stroke.width;g.strokeStyle=stroke.color;g.lineCap='round';g.lineJoin='round';g.stroke();}
+ for(const m of S.measures){g.strokeStyle='#ffcc62';g.lineWidth=3;g.beginPath();g.moveTo(m.a.x*c.width,m.a.y*c.height);g.lineTo(m.b.x*c.width,m.b.y*c.height);g.stroke();}
  c.toBlob(blob=>{if(blob)blobDownload(blob,'image/png',(S.caseId||'DEMO')+'-annotated.png')},'image/png');}
 function initCore(){
  $$('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
@@ -80,7 +94,7 @@ function initCore(){
  for(const id of ['importTop','libraryImport'])$('#'+id).onclick=()=>picker.click();
  $('#libraryQuery').oninput=renderLibrary;$('#organFilter').onchange=renderLibrary;
  $('#newCase').onclick=()=>{S.caseId='DEMO-0001';S.caseName='Synthetic accession';S.organ='Unverified';S.source='Synthetic case';S.sourceType='import';S.consent=false;S.image=null;setTitle();resetResults();$('#canvasEmpty').classList.remove('hidden');renderSelect();nav('capture');toast('Synthetic case created. Open an authorized image to analyze.')};
- $('#imageExport').onclick=exportImage;
+ $('#imageExport').onclick=exportImage;const undoBtn=$('#undoMark');if(undoBtn)undoBtn.onclick=undo;
  $('#themeBtn').onclick=()=>{document.body.classList.toggle('dark');try{localStorage.setItem('mopec-theme',document.body.classList.contains('dark')?'dark':'light')}catch{}draw()};
  try{if(localStorage.getItem('mopec-theme')==='dark')document.body.classList.add('dark')}catch{}
  registerViewer();setTitle();resizeCanvas();loadCatalog();
