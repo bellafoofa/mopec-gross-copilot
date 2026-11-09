@@ -94,5 +94,5 @@ function initAnalysis(){
  $('#draftGrossBtn').onclick=draft;$('#exportDraft').onclick=()=>M.blobDownload($('#draftGross').value||'No draft created.','text/plain',(S.caseId||'DEMO')+'-draft.txt');
  renderCues();
 }
-M.renderCues=renderCues;M.renderReview=renderReview;M.renderFindings=renderFindings;M.encodeImage=encodeImage;M.exportRecord=exportRecord;M.initAnalysis=initAnalysis;
+M.renderCues=renderCues;M.renderReview=renderReview;M.renderFindings=renderFindings;M.renderQC=renderQC;M.qcScreen=qcScreen;M.paintMask=paintMask;M.encodeImage=encodeImage;M.exportRecord=exportRecord;M.initAnalysis=initAnalysis;
 })();
