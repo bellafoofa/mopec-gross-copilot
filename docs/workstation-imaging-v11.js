@@ -2,7 +2,7 @@
 /* LTU/Mopec v11 — calibrated measurement, polygon labeling, QA, and mask validation */
 (()=>{'use strict';
 const M=window.Mopec;if(!M)return;const S=M.S,$=M.$,safe=M.safe,toast=M.toast;
-const cv=$('#viewCanvas');let polygon=[],hover=null,gt=null;
+const cv=$('#viewCanvas');let polygon=[],hover=null,gt=null,gtShow=false;
 const css='';const get=(id)=>document.getElementById(id);
 const count=(n)=>Number.isFinite(n)?Math.round(n):0;
 function mmText(pixels){return S.mmPerPixel>0?(pixels*S.mmPerPixel).toFixed(2)+' mm':count(pixels)+' px';}
@@ -12,7 +12,7 @@ function labelScale(){
 }
 function drawExtensions(ctx,opt){
  const tl=opt.toCanvas(0,0),w=S.imageWidth*opt.scale,h=S.imageHeight*opt.scale;
- if(gt?.overlay && S.overlay){ctx.save();ctx.globalAlpha=.5;ctx.drawImage(gt.overlay,tl.x,tl.y,w,h);ctx.restore();}
+ if(gt?.overlay && gtShow && S.overlay){ctx.save();ctx.globalAlpha=.5;ctx.drawImage(gt.overlay,tl.x,tl.y,w,h);ctx.restore();}
  function path(points,close,color,fill){
   if(!points?.length)return;ctx.save();ctx.beginPath();
   points.forEach((p,i)=>{let xy=opt.toCanvas(p.x*S.imageWidth,p.y*S.imageHeight);i?ctx.lineTo(xy.x,xy.y):ctx.moveTo(xy.x,xy.y)});
@@ -26,6 +26,7 @@ function drawExtensions(ctx,opt){
    const b=opt.toCanvas(hover.x*S.imageWidth,hover.y*S.imageHeight);ctx.save();ctx.strokeStyle='#ffd87c';ctx.lineWidth=1.4;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();
   }}
  }
+ if(S.comparisonPrediction?.candidates?.length && S.overlay){ctx.save();ctx.strokeStyle='#d692ff';ctx.lineWidth=2;ctx.setLineDash([5,4]);S.comparisonPrediction.candidates.forEach((c,i)=>{const [x,y,bw,bh]=c.box||[];if(![x,y,bw,bh].every(Number.isFinite))return;const p=opt.toCanvas(x/1000*S.imageWidth,y/1000*S.imageHeight);ctx.strokeRect(p.x,p.y,bw/1000*S.imageWidth*opt.scale,bh/1000*S.imageHeight*opt.scale);if(i<10){ctx.font='bold 12px system-ui';ctx.fillStyle='#e4b5ff';ctx.fillText('B'+(i+1),p.x+2,p.y+14);}});ctx.restore();}
  if(S.compareMode){
   // Repaint the original photograph over the left-hand portion, preserving analysis on the right.
   ctx.save();const boundary=ctx.canvas.width*(S.compareSplit??50)/100;
@@ -98,7 +99,7 @@ function renderReadiness(){
  let checks=[];
  checks.push({name:'Image loaded',ok:!!S.image});
  checks.push({name:'Image QC reviewed',ok:!!S.qcAcknowledged});
- checks.push({name:'AI / manual finding reviewed',ok:!!S.analysis&&!(S.analysis.candidates||[]).length || (S.analysis?.candidates||[]).every((_,i)=>Boolean(S.reviewDecisions[i]))});
+ checks.push({name:'AI feature proposals reviewed',ok:!!S.analysis&&(!(S.analysis.candidates||[]).length||(S.analysis.candidates||[]).every((_,i)=>Boolean(S.reviewDecisions[i])))});
  checks.push({name:'PA final decision',ok:!!S.reviewDecision});
  const remaining=checks.filter(x=>!x.ok).length;
  get('readiness').innerHTML=checks.map(x=>'<span class="v11-ready '+(x.ok?'done':'pending')+'">'+(x.ok?'✓ ':'○ ')+safe(x.name)+'</span>').join('')+'<span class="v11-ready-total">'+(remaining?' '+remaining+' pending':' Ready for export')+'</span>';
@@ -106,7 +107,7 @@ function renderReadiness(){
  if(get('viewCount'))get('viewCount').textContent=covered+' / 5 confirmed';
 }
 function changeCase(){
- polygon=[];hover=null;gt=null;
+ polygon=[];hover=null;gt=null;gtShow=false;
  S.polygons=[];S.mmPerPixel=null;S.calibration=null;S.qcAcknowledged=false;S.qcReviewNote='';S.viewChecks={};S.compareMode=false;S.compareSplit=50;S.maskValidation=null;
  if(get('knownMm'))get('knownMm').value='';
  if(get('qcReviewNote'))get('qcReviewNote').value='';
@@ -139,7 +140,7 @@ async function maskInput(file){
   overlay.getContext('2d').putImageData(maskData,0,0);
   gt={name:file.name,w,h,pixels:maskPixels,overlay,verified:false};S.gtMask={name:file.name,width:w,height:h,paired:true,review_status:'Reference supplied by user; expert status unverified'};
   get('maskResult').textContent='Paired mask loaded ('+file.name+'). Results require polygon annotation and expert-provenance verification.';
-  if(get('gtOverlay'))get('gtOverlay').checked=true;M.draw();validateMask();
+  if(get('gtOverlay'))get('gtOverlay').checked=true;gtShow=true;M.draw();validateMask();
  }catch(e){toast('Could not read reference PNG mask.');}
  finally{URL.revokeObjectURL(url);}
 }
@@ -185,7 +186,7 @@ function init(){
  const models=$('#page-models');const validation=document.createElement('section');validation.className='panel v11-panel';
  validation.innerHTML='<div class="section-head"><h2>Ground-truth segmentation validation</h2><span class="case-pill">Local research only</span></div><p class="v11-mini">Load an aligned binary PNG mask with the exact native image dimensions. Compare only human-drawn polygons, never unverified model boxes. Files stay in this browser.</p><div class="v11-inline"><input type="file" id="gtFile" accept="image/png" aria-label="Upload expert reference mask"><label class="v11-checkrow"><input id="gtOverlay" type="checkbox"> Show mask overlay</label><button id="compareMasks" class="btn small">Calculate overlap</button></div><div id="maskResult" class="v11-result">No paired reference mask loaded.</div><p class="v11-mini">Dice and IoU measure overlap, not diagnosis accuracy. Expert provenance must be established separately.</p>';
  models.append(validation);
- get('gtFile').onchange=e=>maskInput(e.target.files[0]);get('gtOverlay').onchange=e=>{if(gt)gt.overlay=get('gtOverlay').checked?gt.overlay:null;M.draw();};
+ get('gtFile').onchange=e=>maskInput(e.target.files[0]);get('gtOverlay').onchange=e=>{gtShow=!!e.target.checked;M.draw();};
  get('compareMasks').onclick=validateMask;
  cv.addEventListener('pointerdown',canvasDown,true);cv.addEventListener('pointermove',canvasMove,true);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.tool==='polygon'&&polygon.length){resetPolygon();return;}if(e.key==='Enter'&&S.tool==='polygon'&&polygon.length>=3&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){finishPolygon();}});
