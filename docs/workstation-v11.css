@@ -1,0 +1,68 @@
+
+/* Mopec workstation v11 — compact hospital workstation, progressive disclosure */
+.v11-panel{margin:15px 0 0;border:1px solid var(--line);background:var(--surface);padding:16px}
+details.v11-panel>summary{font-size:12px;font-weight:700;cursor:pointer;color:var(--ink);list-style-position:inside;padding:2px 0;display:flex;align-items:center;gap:10px}
+details.v11-panel>summary::before{content:'▸';color:var(--muted)}
+details.v11-panel[open]>summary::before{content:'▾'}
+details.v11-panel>summary span{margin-left:auto;font-size:10px;color:var(--muted);font-weight:550}
+.v11-panel h2{font-size:13px;margin:0}
+.v11-panel h3{font-size:12px;margin:13px 0 8px;font-weight:700}
+.v11-panel p{font-size:11px;line-height:1.55;color:var(--muted)}
+.v11-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding-top:10px}
+.v11-inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.v11-inline input[type=number],.v11-inline input[type=text],.v11-inline input[type=file],.v11-inline select,.v11-inline textarea{max-width:100%;min-width:0;border:1px solid var(--line);border-radius:4px;padding:9px;background:var(--surface);color:var(--ink);font-size:12px}
+.v11-inline input[type=number]{max-width:210px}
+.v11-mini{font-size:11px!important;color:var(--muted);line-height:1.55;margin:5px 0}
+.v11-polyrows{display:flex;flex-direction:column;gap:8px;padding-bottom:5px;font-size:11px;color:var(--muted)}
+.v11-poly-row{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line2)}
+.v11-poly-row input,.v11-poly-row select{border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);font-size:11px;min-width:0;padding:7px}
+.v11-panel textarea{max-width:100%;width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:10px;font-size:12px;display:block;margin-bottom:10px}
+.v11-checkrow{display:flex;align-items:center;gap:8px;line-height:1.55;color:var(--ink);font-size:11px;margin:7px 0}
+.v11-checkrow input[type=checkbox]{width:15px;height:15px;flex:0 0 auto}
+.v11-readiness{margin-top:15px;border-top:1px solid var(--line2);padding-top:12px}
+#readiness{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.v11-ready{font-size:11px;border:1px solid var(--line);padding:6px 9px;color:var(--muted)}
+.v11-ready.done{border-color:#23877155;color:var(--teal)}
+.v11-ready.pending{border-color:#d8a35365;color:var(--warn)}
+.v11-ready-total{font-size:11px;color:var(--muted);padding:6px}
+.v11-result{font-size:12px;border-left:3px solid var(--accent);background:var(--surface2);padding:11px 13px;margin:13px 0;line-height:1.7}
+.v11-result small{display:block;font-size:10px}
+.v11-nav-quick{display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:var(--surface2);border-bottom:1px solid var(--line);padding:8px 24px;font-size:11px;color:var(--muted)}
+.v11-nav-quick strong{color:var(--ink);font-size:11px}
+.v11-nav-quick button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px;padding:6px 10px;font-size:11px;font-weight:600}
+.v11-nav-quick button:hover{color:var(--accent2);background:var(--navactive)}
+.v11-nav-quick span{margin-left:auto}
+.v11-ribbon{display:flex;gap:9px;align-items:center;border:1px solid var(--line);padding:12px 13px;background:var(--surface);margin:11px 0}
+.v11-ribbon .v11-ribbon-icon{height:25px;width:25px;display:grid;place-items:center;border:1px solid var(--line);font-size:13px;color:var(--accent2);flex:none}
+.v11-ribbon strong{font-size:12px;display:block}
+.v11-ribbon small{font-size:11px;color:var(--muted);line-height:1.5}
+.v11-ribbon button{margin-left:auto;white-space:nowrap}
+.v11-inputrow{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.v11-inputrow label{font-size:11px;font-weight:700}
+.v11-inputrow input,.v11-inputrow select,.v11-inputrow textarea{background:var(--surface);border:1px solid var(--line);padding:10px;color:var(--ink);font-size:12px;line-height:1.5;min-width:0}
+.v11-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.v11-table{border-collapse:collapse;width:100%;font-size:11px}
+.v11-table th{text-align:left;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 6px}
+.v11-table td{border-bottom:1px solid var(--line2);padding:8px 6px;vertical-align:top}
+.v11-chart{height:7px;background:var(--line);position:relative;overflow:hidden;margin:5px 0;border-radius:0}
+.v11-chart>span{position:absolute;left:0;top:0;bottom:0;background:var(--teal)}
+.v11-metricgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
+.v11-metric{border:1px solid var(--line);padding:12px;min-width:0}
+.v11-metric strong{font-size:20px;font-weight:750;display:block}
+.v11-metric small{font-size:10px;line-height:1.3}
+.v11-timeline{padding:0;margin:10px 0;list-style:none}
+.v11-timeline li{display:flex;align-items:flex-start;gap:10px;border-left:2px solid var(--line);margin-left:6px;padding:5px 0 12px 13px;font-size:11px;color:var(--ink)}
+.v11-timeline time{color:var(--muted);font-size:10px;flex:0 0 65px}
+.v11-handoff{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.v11-toggle{font-size:11px;display:flex;align-items:center;gap:7px}
+body.v11-focus .nav [data-nav="models"],body.v11-focus .nav [data-nav="guidance"],body.v11-focus .nav h3:nth-of-type(2){display:none}
+body.v11-focus .nav-foot{display:none}
+#v11Focus{white-space:nowrap}
+#v11Help{min-width:32px}
+.v11-helpdialog{border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);box-shadow:0 16px 60px #0004;width:min(530px,95vw);padding:24px}
+.v11-helpdialog::backdrop{background:#07142088}
+.v11-helpdialog h2{font-size:18px;margin:0 0 9px}
+.v11-helpdialog p,.v11-helpdialog li{font-size:12px;line-height:1.6}
+.v11-helpdialog .v11-help-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+@media(max-width:1100px){.v11-grid{grid-template-columns:1fr}.v11-metricgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.v11-nav-quick{padding:8px 10px;gap:5px}.v11-nav-quick span{display:none}.v11-ribbon{align-items:flex-start;flex-wrap:wrap}.v11-ribbon button{margin-left:0}.v11-poly-row{grid-template-columns:1fr}.v11-pair{grid-template-columns:1fr}.v11-metricgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
