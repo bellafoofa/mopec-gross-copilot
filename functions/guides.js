@@ -112,4 +112,25 @@ export const GUIDES = [
       "Escalation recorded"
     ]
   }
+,
+{
+ "id":"ltu-renal-anatomy-008",
+ "title":"Renal resection: staging-relevant anatomy review cues",
+ "tag":"Kidney",
+ "version":"0.2",
+ "source_url":"https://voices.uchicago.edu/grosspathology/gu-renal/nephrectomy-neoplastic/",
+ "source_title":"University of Chicago Gross Pathology Manual — neoplastic nephrectomy",
+ "content":"Student teaching draft for anatomy-focused imaging QA, NOT an approved clinical SOP. For source-labeled kidney/nephrectomy specimens, check whether photographs and case notes capture tumor dimensions, renal sinus fat interface, perinephric fat, renal vein, collecting system, relevant margins and representative sampling. An image region contacting sinus fat is a review prompt, not proof of invasion or cancer stage. Flag missing views for PA/pathologist review and follow the actual institution-approved sampling procedure.",
+ "checklist":["Confirm organ and orientation","Capture scale and gross lesion dimensions","Review renal sinus fat interface","Review renal vein and perinephric fat","Check margins and sampling questions","Refer uncertain areas for expert review"]
+},
+{
+ "id":"ltu-voice-intake-009",
+ "title":"Hands-free case capture and dictation verification",
+ "tag":"Workflow",
+ "version":"0.1",
+ "source_url":"https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API",
+ "source_title":"MDN — Web Speech API recognition and privacy",
+ "content":"Student UI/testing draft. In an authorized deployment, scan accession codes from station cameras, verify specimen-to-record matches and visibly confirm dictated measurements, units and orientation. This public research app accepts only DEMO/SYNTHETIC barcodes. Browser speech recognition can use a remote service, so do not dictate patient identifiers. Actual hospital use requires an approved local or privacy-controlled speech stack, secure identity and audit controls.",
+ "checklist":["Confirm approved data source","Verify scanned ID linkage","Validate transcribed dimensions and units","Review transcription errors","Check audio processing destination","Never auto-finalize case records"]
+}
 ];
