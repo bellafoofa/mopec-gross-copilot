@@ -4,35 +4,50 @@
 import { GUIDES } from '../functions/guides.js';
 
 const DEFAULT_MODEL = 'qwen/qwen3.8-27b';
-const MINIMAX_DEFAULT='MiniMax-M3.1-Flash';
-const KIMI_DEFAULT='kimi-k3.1-pro';
-/* Server-only provider routing: no visitor-supplied model URL or API key.
-   CLIPPY_PROVIDER=minimax | kimi | groq explicitly selects one; if unset,
-   use the first available managed key (MiniMax > Kimi > Groq). */
-export function modelConfig(env={}){
+const MINIMAX_DEFAULT = 'MiniMax-M3.1-Flash';
+const KIMI_DEFAULT = 'kimi-k3.1-pro';
+const CLOUDFLARE_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
+
+/** Server-side only. Configured Cloudflare Workers AI is preferred by default,
+ * eliminating public visitor keys. Owner may explicitly choose minimax/kimi/groq.
+ * Do not silently switch to a paid provider when a requested provider fails. */
+export function modelConfig(env={}) {
   const providers={
-    minimax:{provider:'MiniMax',model:env.MINIMAX_MODEL||MINIMAX_DEFAULT,key:env.MINIMAX_API_KEY||'',endpoint:'https://api.minimax.io/v1/chat/completions'},
-    kimi:{provider:'Kimi',model:env.KIMI_MODEL||KIMI_DEFAULT,key:env.MOONSHOT_API_KEY||'',endpoint:'https://api.moonshot.ai/v1/chat/completions'},
-    groq:{provider:'Groq',model:env.GROQ_MODEL||DEFAULT_MODEL,key:env.GROQ_API_KEY||'',endpoint:'https://api.groq.com/openai/v1/chat/completions'}
+    cloudflare:{name:'cloudflare',provider:'Cloudflare AI · Mistral',model:CLOUDFLARE_MODEL,endpoint:'Workers AI binding',key:'',configured:typeof env.AI?.run==='function'},
+    minimax:{name:'minimax',provider:'MiniMax',model:env.MINIMAX_MODEL||MINIMAX_DEFAULT,endpoint:'https://api.minimax.io/v1/chat/completions',key:env.MINIMAX_API_KEY||'',configured:!!env.MINIMAX_API_KEY},
+    kimi:{name:'kimi',provider:'Kimi',model:env.KIMI_MODEL||KIMI_DEFAULT,endpoint:'https://api.moonshot.ai/v1/chat/completions',key:env.MOONSHOT_API_KEY||'',configured:!!env.MOONSHOT_API_KEY},
+    groq:{name:'groq',provider:'Groq',model:env.GROQ_MODEL||DEFAULT_MODEL,endpoint:'https://api.groq.com/openai/v1/chat/completions',key:env.GROQ_API_KEY||'',configured:!!env.GROQ_API_KEY}
   };
-  const selected=String(env.CLIPPY_PROVIDER||'').trim().toLowerCase();
-  const name=['minimax','kimi','groq'].includes(selected)?selected:
-    providers.minimax.key?'minimax':providers.kimi.key?'kimi':'groq';
-  return {...providers[name],name,configured:!!providers[name].key};
+  const prefer=String(env.CLIPPY_PROVIDER||'').trim().toLowerCase();
+  const requested=prefer==='workers_ai'?'cloudflare':prefer;
+  const choice=['cloudflare','minimax','kimi','groq'].includes(requested)?requested:
+    providers.cloudflare.configured?'cloudflare':providers.minimax.configured?'minimax':providers.kimi.configured?'kimi':'groq';
+  const cfg=providers[choice];
+  return {...cfg};
 }
 export async function requestModel(env,messages,{vision=false,fetcher=fetch}={}){
   const cfg=modelConfig(env);
   if(!cfg.configured)return {cfg,res:null,data:null};
-  // MiniMax and Moonshot accept OpenAI-compatible image_url parts. Never return
-  // upstream error bodies: they can include sensitive request context.
-  const body={model:cfg.model,messages,stream:false,max_completion_tokens:vision?2800:1900};
+  if(cfg.name==='cloudflare'){
+    try{
+      // Mistral Small 3.1 is multimodal and supports text+image messages;
+      // Workers AI binding has no exposed visitor credentials.
+      const result=await env.AI.run(cfg.model,{
+        messages,stream:false,max_tokens:vision?1550:1250,temperature:vision?.1:.15
+      });
+      const content=normalizeContent(result?.response ?? result?.choices?.[0]?.message?.content ?? result);
+      return {cfg,res:{ok:true,status:200,headers:new Headers()},data:{model:cfg.model,choices:[{message:{content}}]}};
+    }catch(error){
+      const status=Number(error?.status||error?.statusCode)||(/429|rate limit|quota|neurons/i.test(String(error?.message||''))?429:503);
+      return {cfg,res:{ok:false,status,headers:new Headers()},data:{}};
+    }
+  }
+  const body={model:cfg.model,messages,stream:false,max_completion_tokens:vision?1700:1350};
   if(cfg.name==='groq'){
     body.temperature=vision?0.1:0.15;
     body.reasoning_effort=vision?'low':'medium';
     body.reasoning_format='hidden';
-  }else{
-    body.reasoning_effort='low';
-  }
+  }else body.reasoning_effort='low';
   if(vision)body.response_format={type:'json_object'};
   const res=await fetcher(cfg.endpoint,{
     method:'POST',
@@ -43,6 +58,22 @@ export async function requestModel(env,messages,{vision=false,fetcher=fetch}={})
   const data=await res.json().catch(()=>({}));
   return {cfg,res,data};
 }
+/** Public-safe provider status. Never return upstream error bodies or request contents. */
+function providerError(cfg,res){
+  const retry=Number(res?.headers?.get?.('retry-after'));
+  const seconds=Number.isFinite(retry)&&retry>0?Math.min(3600,Math.ceil(retry)):null;
+  const quota=res?.status===429;
+  const message=quota
+    ? cfg.name==='cloudflare'
+      ? 'The research AI daily allocation or request limit is temporarily exhausted. The specimen image and local QC tools are still available.'
+      : cfg.provider+' has reached a usage limit. The specimen image is fine; use local QC now or retry after your account limit resets.'
+    : res?.status===401?'Model credentials need attention from the project owner.'
+    : res?.status===403?'This model is not accessible under the current account plan.'
+    : res?.status===404?'The selected AI model is unavailable. The project owner should update its model ID.'
+    : 'The AI provider is temporarily unavailable. Local review tools still work.';
+  return {error:message,type:quota?'rate_limited':'provider_error',provider:cfg.provider,code:res?.status||503,retry_after_seconds:seconds};
+}
+
 const PHOTO_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Polycystic_kidneys%2C_gross_pathology_CDC_PHIL.png/1280px-Polycystic_kidneys%2C_gross_pathology_CDC_PHIL.png';
 
 const SPECIMENS = [
@@ -105,11 +136,7 @@ export async function ask(request,env,fetcher=fetch){
   try{
     const {cfg,res,data}=await requestModel(env,messages,{fetcher});
     const model=cfg.model;
-    if(!res.ok){
-      // Do not return upstream secret-bearing details or raw server traces to visitors.
-      const kind=res.status===429?'Daily or minute quota reached':res.status===401?'Invalid provider key':res.status===404?'Provider model not available':'Provider request failed';
-      return json({error:`${kind} (${cfg.provider} HTTP ${res.status}). The research guides remain available.`,type:'provider_error',sources:citations},503);
-    }
+    if(!res.ok)return json({...providerError(cfg,res),sources:citations},res.status===429?429:503);
     const content=normalizeContent(data?.choices?.[0]?.message?.content);
     if(!content)return json({error:'AI returned no usable text. Try a smaller question or switch to SOP guidance.',type:'empty_response',sources:citations},503);
     const disagreement=image?organMismatch(source,content):null;
@@ -145,7 +172,7 @@ export async function vision(request,env,fetcher=fetch){
   const messages=[{role:'system',content:'You are a gross pathology research image review assistant. Visible morphology only; candidate features are unvalidated suggestions, never final diagnoses. Output valid JSON.'},{role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:v.image}}]}];
   try{
     const {cfg,res,data}=await requestModel(env,messages,{vision:true,fetcher});
-    if(!res?.ok)return json({error:'Vision inference unavailable ('+cfg.provider+' HTTP '+(res?.status||503)+'). Try again later.',type:'provider_error'},503);
+    if(!res?.ok)return json(providerError(cfg,res),res?.status===429?429:503);
     let body=normalizeContent(data?.choices?.[0]?.message?.content);if(!body)return json({error:'No visual proposal returned'},503);
     let parsed;try{parsed=JSON.parse(body)}catch{const m=body.match(/\{[\s\S]*\}/);try{parsed=JSON.parse(m?.[0]||'')}catch{return json({error:'Model returned unstructured output; retry analysis'},503)}}
     const safeText=(s,n=200)=>String(s||'').slice(0,n);
@@ -168,7 +195,7 @@ export default {
    const url=new URL(request.url);
    if(url.pathname==='/api/health'){
      if(request.method!=='GET')return json({error:'GET required'},405);
-     const cfg=modelConfig(env);return json({configured:cfg.configured,provider:cfg.provider,model:cfg.model,scope:'public research demo',validated_clinical_model:false});
+     const cfg=modelConfig(env);return json({configured:cfg.configured,provider:cfg.provider,model:cfg.model,model_mode:cfg.name,free_allocation_limited:cfg.name==='cloudflare',scope:'public research demo',validated_clinical_model:false});
    }
    if(url.pathname==='/api/guides'){if(request.method!=='GET')return json({error:'GET required'},405);return json(GUIDES.map(g=>({id:g.id,title:g.title,tag:g.tag,version:g.version,content:g.content,checklist:g.checklist,source_url:g.source_url,source_title:g.source_title,approval:'LTU student teaching draft; not approved clinical SOP'})));}
    if(url.pathname==='/api/catalog')return json(SPECIMENS);
