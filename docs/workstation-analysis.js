@@ -59,16 +59,48 @@ function renderFindings(){
  M.draw();
 }
 async function analyze(){
- if(!S.image){toast('Open a specimen image first.');return}
+ if(!S.image){toast('Open a specimen image first.');return;}
+ const activeImage=S.image,activeId=S.caseId;
  S.qc=qcScreen();S.mask=paintMask();renderQC();renderCues();M.step(3);M.draw();
- if(!M.remoteAllowed()){toast('Cloud AI needs an authorized public/de-identified image. Confirm this under Capture.');M.nav('capture');return}
- const btn=$('#analyzeBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Analyzing';$('#analysisState').textContent='Vision request…';
+ if(!M.remoteAllowed()){toast('Cloud AI needs an authorized public or de-identified image. Confirm permission under Capture.');M.nav('capture');return;}
+ const btn=$('#analyzeBtn');if(btn.disabled)return;
+ btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Analyzing';$('#analysisState').textContent='Requesting image review…';
  try{
- const image=encodeImage();if(!image)throw Error('Cannot prepare the image for AI inference.');
- const resp=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,source:S.caseName+'; '+S.organ+'; '+S.source}),signal:AbortSignal.timeout(58000)});const data=await resp.json().catch(()=>({}));if(!resp.ok)throw Error(data.error||'AI service unavailable.');
- S.analysis=data;S.selected=-1;S.reviewDecisions={};S.reviewEvents=S.reviewEvents||[];S.reviewEvents.push({time:new Date().toISOString(),event:'model_result',model:data.model||null,candidates:(data.candidates||[]).length,case_id:S.caseId});M.step(4);renderFindings();window.dispatchEvent(new CustomEvent('mopec:analysis-complete',{detail:{model:data.model,candidates:(data.candidates||[]).length}}));M.nav('analysis');toast('Analysis returned. Verify the suggested regions and review checklist.');
- }catch(e){S.analysis=null;$('#analysisState').textContent='AI unavailable';$('#findings').innerHTML='<div class="empty-data">QC completed; model request did not return usable analysis. '+safe(e.message||'')+'</div>';$('#findCount').textContent='—';toast(e.message||'Model unavailable');}
- finally{btn.disabled=false;btn.innerHTML='<svg><use href="#i-play"></use></svg> Analyze image';M.draw();}
+  const image=encodeImage();if(!image)throw Error('Cannot prepare this image for AI inference.');
+  const resp=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,source:S.caseName+'; '+S.organ+'; '+S.source}),signal:AbortSignal.timeout(58000)});
+  const data=await resp.json().catch(()=>({}));
+  if(!resp.ok){
+    const error=new Error(data.error||'AI temporarily unavailable.');
+    error.type=data.type||'provider_error';error.retry_after_seconds=data.retry_after_seconds||0;
+    throw error;
+  }
+  if(S.image!==activeImage||S.caseId!==activeId){toast('AI result was discarded because the active specimen changed.');return;}
+  S.analysis=data;S.selected=-1;S.reviewDecisions={};
+  S.reviewEvents=S.reviewEvents||[];
+  S.reviewEvents.push({time:new Date().toISOString(),event:'model_result',model:data.model||null,candidates:(data.candidates||[]).length,case_id:S.caseId});
+  M.step(4);renderFindings();
+  window.dispatchEvent(new CustomEvent('mopec:analysis-complete',{detail:{model:data.model,candidates:(data.candidates||[]).length}}));
+  M.nav('analysis');toast('Preliminary image review completed. Verify all candidate regions.');
+ }catch(e){
+  if(S.image!==activeImage||S.caseId!==activeId)return;
+  const busy=e.type==='rate_limited',delay=e.retry_after_seconds>0?' Retry after approximately '+Math.ceil(e.retry_after_seconds/60)+' minute(s).':'';
+  const message=(e.message||'Model unavailable')+delay;
+  $('#analysisState').textContent=busy?'AI quota reached':'AI unavailable';
+  // Preserve earlier reviewed results instead of deleting annotations if a retry fails.
+  if(S.analysis)renderFindings();else{$('#findCount').textContent='—';$('#findings').innerHTML='';}
+  const notice=document.createElement('div');notice.className='notice warn';notice.style.marginBottom='12px';
+  const heading=document.createElement('strong');heading.textContent=busy?'Model usage limit':'Could not complete AI review';
+  const details=document.createElement('p');details.className='muted';details.style.margin='7px 0';details.textContent=message;
+  const reminder=document.createElement('p');reminder.className='muted';reminder.style.margin='7px 0';reminder.textContent='This is not a problem with the specimen image. Local QC, measurements, and PA review still work.';
+  const local=document.createElement('button');local.type='button';local.className='btn small';local.textContent='Run local QC';
+  local.onclick=()=>M.v14?.runLocalQC?.();
+  notice.append(heading,details,reminder,local);$('#findings').prepend(notice);
+  toast(busy?'AI limit reached. Local tools still work.':e.message||'Model unavailable');
+ }finally{
+  btn.disabled=!!S.localReviewOnly;
+  btn.innerHTML='<svg><use href="#i-play"></use></svg> Analyze image';
+  M.draw();
+ }
 }
 function renderReview(){
  const items=checks(),out=$('#reviewChecklist');out.innerHTML='';$('#reviewOrgan').textContent=S.organ||'General';
