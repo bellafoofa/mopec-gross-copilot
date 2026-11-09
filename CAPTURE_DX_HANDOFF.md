@@ -51,3 +51,14 @@ Geo should confirm field mappings, coordinate calibration, audit schema, roles, 
 ## Next validation set
 
 Check capture and review tasks with PA observers, false glare/blur QC alerts, source/image organ mismatches, inappropriate stage assertions, held-out mask Dice/IoU, reviewer acceptance/edit rates, reference retrieval with abstention, and any failure to retain source/model/version in exported records.
+
+## v10.1 sponsor-directed extensions
+
+- **Priority anatomy review:** `docs/workstation-sponsor.js` adds a specimen-specific PA checklist (kidney renal sinus/perinephric/vascular interfaces, measurements, collecting system; breast margins/size/skin/nodes). Each item records *not reviewed*, *no concern noted*, *follow-up required*, *not assessable in image*, or *not applicable*, plus a reviewer note. These are **verification prompts**, not automatic cancer-stage decisions.
+- **Clippy ROI focus:** The active, user-selected model bounding box can be cropped at a higher effective resolution from the original image for a single Clippy question. The cropped question is annotated with the ROI context; it does not represent a 200 MP tiled model or validated lesion mask.
+- **Dataset candidate export:** `Models & Setup → Export current case manifest` emits `ltu-capturedx-dataset-candidate/1.1` with source, rights status, QC, candidate locations, human decisions and case-level split unset. It does **not** include expert masks or training permissions.
+- **PA task observation:** `Review & Evidence → PA walkthrough & workflow observation` times an opt-in simulated workflow session and exports a local usability log without uploading identifying information. The lab observation still requires site approval and professional consent.
+- **Hands-free navigation:** More voice phrases route to Cases, Review, Evidence, Library and Models; spoken commands cannot approve clinical findings.
+- **Export:** Existing review JSON now includes priority-anatomy statuses and capture notes. Any integration into Capture DX must map these to Mopec's actual schema with Geo.
+
+The prototype's Groq key stays in the **Cloudflare runtime secret**; the sponsor-recommended exact MiniMax/Kimi identifiers, `ltu.pathologize.com` access and the DGX/VPN training environment are still pending. Do not commit these credentials or Mopec clinical data to this public repository.
