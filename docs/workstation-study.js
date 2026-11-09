@@ -22,7 +22,7 @@ function stop(){
 function initStudy(){
  $('#studyStart').onclick=start;$('#studyStop').onclick=stop;$('#studyError').onclick=()=>{if(active){active.errors++;paint()}};
  $('#studyExport').onclick=()=>{if(!done)return;M.blobDownload(JSON.stringify({...done,notes:$('#studyNotes').value.slice(0,1500)},null,2),'application/json','mopec-pa-usability-'+done.mode+'.json');};
- document.addEventListener('click',event=>{if(!active)return;const button=event.target.closest?.('button');if(button&&button.id!=='studyError')active.clicks++;},false);
+ document.addEventListener('click',event=>{if(!active)return;const button=event.target.closest?.('button');if((button&&button.id!=='studyError')||event.target.id==='viewCanvas')active.clicks++;},false);
  paint();
 }
 M.initStudy=initStudy;
