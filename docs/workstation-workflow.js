@@ -16,7 +16,7 @@ async function scanBarcode(){
 }
 function command(text){
  const t=text.toLowerCase().trim().replace(/[.!?]+$/,'');
- const navs={'open analysis':'analysis','open ai analysis':'analysis','open cases':'cases','open case list':'cases','open capture':'capture','open camera':'capture','open protocols':'guidance','open guidance':'guidance'};
+ const navs={'open analysis':'analysis','show analysis':'analysis','open ai analysis':'analysis','open cases':'cases','open case list':'cases','open capture':'capture','open camera':'capture','open protocols':'guidance','open guidance':'guidance','open review':'review','review case':'review','open evidence':'review','show image library':'library','open image library':'library','open model settings':'models'};
  if(navs[t]){M.nav(navs[t]);return true}
  if(['show clippy','open clippy'].includes(t)){M.openChat?.(true);return true}
  if(['hide clippy','close clippy'].includes(t)){M.openChat?.(false);return true}
