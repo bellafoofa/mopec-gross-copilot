@@ -55,7 +55,7 @@ details.v11-panel>summary span{margin-left:auto;font-size:10px;color:var(--muted
 .v11-timeline time{color:var(--muted);font-size:10px;flex:0 0 65px}
 .v11-handoff{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .v11-toggle{font-size:11px;display:flex;align-items:center;gap:7px}
-body.v11-focus .nav [data-nav="models"],body.v11-focus .nav [data-nav="guidance"],body.v11-focus .nav h3:nth-of-type(2){display:none}
+body.v11-focus .nav [data-nav="models"],body.v11-focus .sponsor-study{display:none}
 body.v11-focus .nav-foot{display:none}
 #v11Focus{white-space:nowrap}
 #v11Help{min-width:32px}
