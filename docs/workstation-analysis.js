@@ -66,7 +66,7 @@ async function analyze(){
  try{
  const image=encodeImage();if(!image)throw Error('Cannot prepare the image for AI inference.');
  const resp=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,source:S.caseName+'; '+S.organ+'; '+S.source}),signal:AbortSignal.timeout(58000)});const data=await resp.json().catch(()=>({}));if(!resp.ok)throw Error(data.error||'AI service unavailable.');
- S.analysis=data;S.selected=-1;S.reviewDecisions={};M.step(4);renderFindings();M.nav('analysis');toast('Analysis returned. Verify the suggested regions and review checklist.');
+ S.analysis=data;S.selected=-1;S.reviewDecisions={};S.reviewEvents=S.reviewEvents||[];S.reviewEvents.push({time:new Date().toISOString(),event:'model_result',model:data.model||null,candidates:(data.candidates||[]).length,case_id:S.caseId});M.step(4);renderFindings();window.dispatchEvent(new CustomEvent('mopec:analysis-complete',{detail:{model:data.model,candidates:(data.candidates||[]).length}}));M.nav('analysis');toast('Analysis returned. Verify the suggested regions and review checklist.');
  }catch(e){S.analysis=null;$('#analysisState').textContent='AI unavailable';$('#findings').innerHTML='<div class="empty-data">QC completed; model request did not return usable analysis. '+safe(e.message||'')+'</div>';$('#findCount').textContent='—';toast(e.message||'Model unavailable');}
  finally{btn.disabled=false;btn.innerHTML='<svg><use href="#i-play"></use></svg> Analyze image';M.draw();}
 }
@@ -79,16 +79,17 @@ function exportRecord(){return{schema:'ltu-mopec-capture-dx-handoff/1.0',exporte
  case:M.caseMeta(),image:{native_width:S.imageWidth,native_height:S.imageHeight},qc:S.qc,model:S.analysis?.model||null,analysis:S.analysis,
  manual_annotations:{stroke_paths:S.strokes,measurements_in_pixels:S.measures,region_review:S.reviewDecisions},
  review:{decision:S.reviewDecision||'Pending',reviewer_label:S.reviewer||null,notes:S.notes,anatomic_checks:checks().map((item,i)=>({item,confirmed:!!S.reviewChecks[i]})),priority_anatomy_checks:S.priorityChecks||{},capture_notes:S.captureNotes||null,draft_description:$('#draftGross').value||null},
- integration_status:'Prototype export only. Not connected to Capture DX, LIS, Epic or shared audit storage. Scores are not calibrated.'}}
+ additional_review:window.Mopec?.exportAdditions?.()||null,review_timeline:S.reviewEvents||[],integration_status:'Prototype export only. Not connected to Capture DX, LIS, Epic or shared audit storage. Scores are not calibrated.'}}
 function draft(){
  if(!S.image){toast('Open an image first.');return}
  const verified=checks().filter((v,i)=>S.reviewChecks[i]),accepted=(S.analysis?.candidates||[]).filter((c,i)=>['Accepted','Edited'].includes(S.reviewDecisions[i]));
- const lines=['DRAFT · PA VERIFICATION REQUIRED','Case: '+S.caseId,'Source specimen: '+S.caseName,'Organ label (source): '+S.organ,'Image: '+S.imageWidth+' × '+S.imageHeight+' px','','REVIEWER-CONFIRMED ITEMS',...(verified.length?verified.map(x=>'- '+x):['- None confirmed']),'','REVIEWED AI REGIONS',...(accepted.length?accepted.map(x=>'- '+x.label):['- No AI regions accepted']),'','MEASUREMENTS',...(S.measures.length?S.measures.map((m,i)=>'- '+(i+1)+': '+Math.round(m.pixels)+' pixels (uncalibrated)'):['- No verified physical measurements']),'','PA NOTES',S.notes||'[Not entered]','','Institution SOP, sampling decisions and final pathologic interpretation require authorized review.'];
+ const polygons=(S.polygons||[]).filter(p=>['Accepted','Edited'].includes(p.review));
+ const lines=['DRAFT · PA VERIFICATION REQUIRED','Case: '+S.caseId,'Source specimen: '+S.caseName,'Organ label (source): '+S.organ,'Image: '+S.imageWidth+' × '+S.imageHeight+' px','','REVIEWER-CONFIRMED ITEMS',...(verified.length?verified.map(x=>'- '+x):['- None confirmed']),'','REVIEWED AI REGIONS',...(accepted.length?accepted.map(x=>'- '+x.label):['- No AI regions accepted']),'','REVIEWED MANUAL REGIONS',...(polygons.length?polygons.map(p=>'- '+p.label+' · '+p.review):['- No manual regions accepted']),'','MEASUREMENTS',...(S.measures.length?S.measures.map((m,i)=>'- '+(i+1)+': '+(S.mmPerPixel>0?(m.pixels*S.mmPerPixel).toFixed(2)+' mm (operator calibration)':Math.round(m.pixels)+' pixels (uncalibrated)')):['- No verified physical measurements']),'','PA NOTES',S.notes||'[Not entered]','','Institution SOP, sampling decisions and final pathologic interpretation require authorized review.'];
  $('#draftGross').value=lines.join('\n');toast('Draft created from reviewer-confirmed material.');}
 function initAnalysis(){
  $('#analyzeBtn').onclick=analyze;
  $('#reviewerName').oninput=e=>S.reviewer=e.target.value.slice(0,100);$('#reviewNote').oninput=e=>S.notes=e.target.value.slice(0,3000);
- $$('[data-case-decision]').forEach(b=>b.onclick=()=>{if(b.dataset.caseDecision==='Rejected'&&!S.notes.trim()){toast('Explain the rejection before saving.');$('#reviewNote').focus();return}S.reviewDecision=b.dataset.caseDecision;renderReview();toast('Review decision recorded for this browser session. Export the record for retention.');});
+ $$('[data-case-decision]').forEach(b=>b.onclick=()=>{if(b.dataset.caseDecision==='Rejected'&&!S.notes.trim()){toast('Explain the rejection before saving.');$('#reviewNote').focus();return}S.reviewDecision=b.dataset.caseDecision;S.reviewEvents=S.reviewEvents||[];S.reviewEvents.push({time:new Date().toISOString(),event:'review_decision',decision:S.reviewDecision,case_id:S.caseId});renderReview();toast('Review decision recorded for this browser session. Export the record for retention.');});
  $('#exportReview').onclick=()=>M.blobDownload(JSON.stringify(exportRecord(),null,2),'application/json',(S.caseId||'DEMO')+'-review.json');
  $('#draftGrossBtn').onclick=draft;$('#exportDraft').onclick=()=>M.blobDownload($('#draftGross').value||'No draft created.','text/plain',(S.caseId||'DEMO')+'-draft.txt');
  renderCues();
