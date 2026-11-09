@@ -2,6 +2,36 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v10 — Mopec sponsor-aligned Capture & Analysis workstation
+
+**Current site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
+
+Designed from the November 6 meeting with Mike and Roseanne and the provided Capture DX screenshots. Work is scoped to a **bespoke module for handoff to Geo**, not a copy of Capture DX's full admin application.
+
+### Working in the browser
+- Case queue and specimen image library; imported JPEG/PNG/WebP photos remain local until the researcher explicitly authorizes cloud AI processing.
+- Capture tab with camera preview and optional camera frame capture, local scanning of synthetic demo barcodes (where BarcodeDetector is supported), notes and browser dictation. Speech recognition may use remote services and is *not* approved hospital transcription.
+- Image QC heuristics (relative sharpness, image size, near-white/dark regions), experimental foreground contour and uncalibrated pixel measurement.
+- Groq vision model suggestions for preliminary organ/finding classification and candidate bounding boxes, with **subjective visual-support percentages**. These are not validated lesion masks, disease probabilities or automatic staging.
+- Per-region accept/edit/reject, renal/breast anatomy-focused verification checklist, reviewer notes, editable gross description draft and local JSON export.
+- Collapsible Clippy question-and-answer sidebar with relevant current specimen context and source-linked draft SOP passages.
+- Model/readiness tab and PA usability walkthrough timer recording task time, button interactions and reported errors; no centralized analytics.
+- Mobile-responsive layout and light/dark appearance.
+
+### Not yet connected
+No live Pathologize.com/Capture DX API, actual Mopec station barcode/200 MP camera, Epic/LIS, official institutional SOP, hospital-grade voice stack, Kimi/MiniMax credentials, validated gross segmentation model or DGX Spark training. These need sponsor-provided access, specific interface contracts, approved data and independent evaluation. Do not use this public Worker with identifiable patient material.
+
+### Handoff & reproducibility
+- [Capture DX handoff and next steps](CAPTURE_DX_HANDOFF.md)
+- [Dataset preparation / DGX prerequisites](training/README.md)
+- [Dataset manifest verifier](training/prepare_manifest.py)
+- [Original v9 web layout](https://mopec-gross-copilot.isabellachandler169.workers.dev/legacy-v9.html)
+
+### Deployment and future requests
+This repository remains connected to Cloudflare Workers Builds; changes committed to main trigger a deployment with the existing secret kept in Cloudflare runtime settings. Do **not** put API keys in GitHub. Client code is in docs/workstation-*; Worker inference/RAG routes are in src/worker.js and functions/guides.js. GitHub Actions checks syntax and backend tests.
+
+---
+
 ## v9 — Interactive Clippy and preliminary scored findings
 
 **Already published to the existing Cloudflare Worker.** No browser API key, Python installation, or reinstallation is necessary.
