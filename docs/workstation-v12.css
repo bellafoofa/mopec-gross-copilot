@@ -1,0 +1,53 @@
+
+/* v12 — Capture DX-informed case inspector and push-to-talk workflow controls */
+.v12-case-dock{width:262px;flex:0 0 262px;background:var(--surface);border-left:1px solid var(--line);padding:0;min-height:calc(100vh - 60px);max-height:calc(100vh - 60px);position:sticky;top:60px;overflow:auto;display:flex;flex-direction:column}
+.v12-case-head{padding:16px 16px 13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.v12-case-head strong{font-size:12px}.v12-case-head small{font-size:10px;color:var(--muted)}
+.v12-dock-section{padding:15px 16px;border-bottom:1px solid var(--line2)}
+.v12-dock-label{font-size:10px;font-weight:740;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:9px}
+.v12-dock-id{font-size:13px;font-weight:730;line-height:1.35;overflow-wrap:anywhere}
+.v12-dock-meta{font-size:11px;color:var(--muted);line-height:1.6;margin-top:3px;overflow-wrap:anywhere}
+.v12-dock-status{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;padding:6px 0;color:var(--muted)}
+.v12-dock-status strong{font-weight:700;color:var(--ink);text-align:right}
+.v12-dock-dot{width:7px;height:7px;display:inline-block;background:var(--teal);border-radius:50%;margin-right:6px}
+.v12-dock-dot.needs{background:var(--warn)}
+.v12-thumb{aspect-ratio:5/3;width:100%;object-fit:contain;background:var(--viewer);border:1px solid var(--line);display:block}
+.v12-dock-actions{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.v12-dock-actions button{font-size:11px;padding:7px 9px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:3px;cursor:pointer;font-weight:600}
+.v12-dock-actions button.v12-accent{background:var(--accent2);color:var(--surface);border-color:var(--accent2)}
+.v12-dock-hint{font-size:10px;color:var(--muted);line-height:1.5}
+.v12-dock-note{padding:15px 16px;font-size:10px;color:var(--muted);line-height:1.5;margin-top:auto}
+body.v12-dock-hidden .v12-case-dock{display:none}
+body.v12-dock-hidden #caseDockToggle{background:var(--navactive)}
+.workstation:has(#assistant:not(.collapsed)) .v12-case-dock{display:none}
+#caseDockToggle,#v12CommandToggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;padding:7px 10px;cursor:pointer;font-size:12px;font-weight:630;min-height:35px}
+#v12CommandToggle:hover,#caseDockToggle:hover{background:var(--navactive)}
+#v12CommandToggle svg{height:15px;width:15px}
+.v12-command-dialog{border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);box-shadow:0 18px 65px #0004;width:min(570px,94vw);max-height:90vh;padding:0;overflow:auto}
+.v12-command-dialog::backdrop{background:#101b2a99}
+.v12-command-head{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+.v12-command-head h2{font-size:17px;line-height:1.3;margin:0}
+.v12-command-head p{font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5}
+.v12-command-main{padding:17px 22px 20px}
+.v12-command-main label{font-size:11px;font-weight:700;display:block;margin-bottom:8px}
+.v12-command-row{display:flex;align-items:stretch;gap:8px}
+.v12-command-row input{flex:1;min-width:0;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:11px 12px;font-size:13px}
+.v12-command-row button{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12px;padding:9px 12px;border-radius:4px;cursor:pointer}
+.v12-command-row button.primary{background:var(--accent2);color:var(--surface);border-color:var(--accent2)}
+.v12-command-row button.listening{background:#aa3636;color:#fff;border-color:#aa3636}
+.v12-command-help{font-size:11px;color:var(--muted);line-height:1.6;margin-top:14px}
+.v12-command-examples{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.v12-command-examples button{font-size:11px;padding:8px 10px;border:1px solid var(--line);color:var(--ink);background:var(--surface2);border-radius:3px;text-align:left;cursor:pointer}
+.v12-command-response{margin-top:13px;padding:10px 12px;background:var(--surface2);color:var(--muted);font-size:11px;line-height:1.5;border-left:3px solid var(--accent)}
+.v12-review-summary{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.v12-review-summary .v12-review-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-top:1px solid var(--line2);padding:8px 0}
+.v12-review-summary .v12-review-row b{color:var(--ink);max-width:60%;font-weight:650}
+.v12-review-summary button{font-size:11px;border:1px solid var(--line);background:var(--surface);padding:7px 10px;color:var(--accent2);border-radius:3px;cursor:pointer}
+.v12-guide-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.v12-guide-targets button{text-align:left;background:var(--surface2);border:1px solid var(--line);padding:11px;border-radius:3px;color:var(--ink);cursor:pointer;font-size:11px;line-height:1.45}
+.v12-guide-targets strong{display:block;margin-bottom:4px;font-size:12px}
+.v12-guide-targets span{color:var(--muted);font-size:10px}
+.v12-target-note{font-size:10px;color:var(--muted);margin-top:9px}
+@media(max-width:1300px){.v12-case-dock{width:230px;flex-basis:230px}.nav{width:165px}.v12-case-head,.v12-dock-section{padding-left:12px;padding-right:12px}}
+@media(max-width:1040px){.v12-case-dock{display:none;position:fixed;right:0;top:60px;height:calc(100dvh - 60px);min-height:0;max-height:none;z-index:20;width:min(330px,95vw);box-shadow:-7px 0 25px #0003}.workstation:has(#assistant.collapsed) body{overflow:visible}body.v12-dock-open .v12-case-dock{display:flex}body.v12-dock-open:has(#assistant:not(.collapsed)) .v12-case-dock{display:none}#v12CommandToggle .btn-label{display:none}}
+@media(max-width:600px){.v12-guide-targets{grid-template-columns:1fr}#caseDockToggle{font-size:11px;padding:6px 7px}#v12CommandToggle{padding:6px 7px}.v12-command-main{padding:14px}.v12-command-row{flex-wrap:wrap}.v12-command-row input{flex-basis:100%}}
