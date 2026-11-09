@@ -192,7 +192,7 @@ function init(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.tool==='polygon'&&polygon.length){resetPolygon();return;}if(e.key==='Enter'&&S.tool==='polygon'&&polygon.length>=3&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){finishPolygon();}});
  window.addEventListener('mopec:case-changed',changeCase);
  document.addEventListener('click',e=>{if(e.target.closest('[data-decide],[data-case-decision]'))queueMicrotask(renderReadiness);});
- M.renderExtensions=drawExtensions;M.exportAdditions=exportExtra;M.finishPolygon=finishPolygon;M.validateManualMask=validateMask;
+ M.renderExtensions=drawExtensions;M.exportAdditions=exportExtra;M.referenceMask=()=>gt?{width:gt.w,height:gt.h,pixels:gt.pixels,filename:gt.name}:null;M.finishPolygon=finishPolygon;M.validateManualMask=validateMask;
  S.polygons=S.polygons||[];S.mmPerPixel=S.mmPerPixel||null;S.viewChecks=S.viewChecks||{};
  qccheck();labelScale();renderPolygons();renderReadiness();M.draw();
 }
