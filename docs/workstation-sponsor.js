@@ -39,7 +39,7 @@ function caseKey(){return String(S.caseId||'none')+'|'+String(S.caseName||'unkno
 function ensure(){
  if(!S.priorityChecks||typeof S.priorityChecks!=='object')S.priorityChecks={};
  if(!S.workflowStudy||typeof S.workflowStudy!=='object')S.workflowStudy={events:[]};
- const current=caseKey();if(key!==current){key=current;S.priorityChecks={};observations=[];started=null;S.roiFocus=false;}
+ const current=caseKey();if(key!==current){key=current;S.priorityChecks={};observations=[];started=null;lastReport=null;S.roiFocus=false;const roi=$('#roiFocus');if(roi){roi.classList.remove('active');roi.setAttribute('aria-pressed','false');roi.textContent='ROI focus';}}
 }
 function render(){
  ensure();const root=$('#priorityChecks');if(!root)return;
