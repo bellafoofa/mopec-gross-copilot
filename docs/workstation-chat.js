@@ -29,7 +29,7 @@ async function sendChat(e){
  const image=S.image&&M.remoteAllowed()?(focus&&M.encodeRegion?M.encodeRegion(1150):M.encodeImage(730)):'';
  const roiNote=focus?' [AI ROI CROP · '+String(focus.label||'feature')+' · zoomed from the original image. Region location is preliminary; crop may omit context. Do not infer invasion, stage or disease from this crop alone.]':'';
  const body={question:question+roiNote,image,source:S.image?(S.caseName+'; '+S.organ+'; '+S.source):'No current image',conversation:S.chatTurns.slice(-6),
- preliminary_analysis:S.analysis?{organ:S.analysis.organ_hypothesis,candidates:(S.analysis.candidates||[]).slice(0,3).map(f=>({label:f.label,visual_support_pct:f.confidence})),possible_considerations:S.analysis.possible_considerations}:null};
+ preliminary_analysis:S.analysis?{organ:S.analysis.organ_hypothesis,candidates:(S.analysis.candidates||[]).slice(0,3).map(f=>({label:f.label,visual_support_pct:f.confidence})),possible_considerations:S.analysis.possible_considerations,priority_review:S.priorityChecks||{}}:null};
  const resp=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(61000)});
  const data=await resp.json().catch(()=>({}));pending.remove();
  if(!resp.ok){post(data.error||'AI service is temporarily unavailable.','assistant');return}
