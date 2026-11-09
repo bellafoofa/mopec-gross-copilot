@@ -63,6 +63,7 @@ function createControls(){
  commands.onclick=showCommands;
  dockBtn.onclick=()=>{const isHidden=document.body.classList.toggle('v12-dock-hidden');
   if(window.innerWidth<=1040)document.body.classList.toggle('v12-dock-open',!isHidden);
+  if(!isHidden&&!$('#assistant').classList.contains('collapsed'))M.openChat?.(false);
   dockBtn.setAttribute('aria-pressed',String(!isHidden));
   M.resizeCanvas?.();};
  const dlg=document.createElement('dialog');dlg.id='v12CommandDialog';dlg.className='v12-command-dialog';
@@ -220,7 +221,7 @@ function initV12(){
  const oldNav=M.nav;M.nav=function(...args){const result=oldNav(...args);setTimeout(refreshDock,30);return result};
  window.addEventListener('resize',()=>{if(window.innerWidth>1040)document.body.classList.remove('v12-dock-open')});
  if(window.innerWidth<=1040)document.body.classList.add('v12-dock-hidden');
- if(S.image)refreshDock();toast('Case review and hands-free controls ready.');
+ if(S.image)refreshDock();
 }
 M.initV12=initV12;
 })();
