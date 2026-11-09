@@ -5,6 +5,7 @@ details.v11-panel>summary{font-size:12px;font-weight:700;cursor:pointer;color:va
 details.v11-panel>summary::before{content:'▸';color:var(--muted)}
 details.v11-panel[open]>summary::before{content:'▾'}
 details.v11-panel>summary span{margin-left:auto;font-size:10px;color:var(--muted);font-weight:550}
+.toolrow #finishPoly{display:none}.toolrow #polygonTool.active + #finishPoly{display:inline-flex}
 .v11-panel h2{font-size:13px;margin:0}
 .v11-panel h3{font-size:12px;margin:13px 0 8px;font-weight:700}
 .v11-panel p{font-size:11px;line-height:1.55;color:var(--muted)}
