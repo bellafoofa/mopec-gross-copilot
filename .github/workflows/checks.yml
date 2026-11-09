@@ -13,20 +13,16 @@ jobs:
           node-version: '22'
       - name: JavaScript syntax
         run: |
-          node --check docs/v8.js
-          node --check docs/v9.js
-          node --check docs/workstation-core.js
-          node --check docs/workstation-analysis.js
-          node --check docs/workstation-workflow.js
-          node --check docs/workstation-chat.js
-          node --check docs/workstation-sponsor.js
-          node --check docs/workstation-boot.js
-          node --check docs/workstation-study.js
-          node --check docs/workstation-core.js
-          node --check docs/workstation-analysis.js
-          node --check docs/workstation-workflow.js
-          node --check docs/workstation-chat.js
-          node --check docs/workstation-boot.js
           node --check src/worker.js
-      - name: Backend regression tests
+          node --check docs/workstation-core.js
+          node --check docs/workstation-analysis.js
+          node --check docs/workstation-workflow.js
+          node --check docs/workstation-chat.js
+          node --check docs/workstation-study.js
+          node --check docs/workstation-sponsor.js
+          node --check docs/workstation-imaging-v11.js
+          node --check docs/workstation-segmentation-v11.js
+          node --check docs/workstation-ops-v11.js
+          node --check docs/workstation-boot.js
+      - name: Workstation wiring and backend regression tests
         run: npm test
