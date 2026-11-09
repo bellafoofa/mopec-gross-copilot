@@ -2,6 +2,16 @@
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
 
+## v15 — Groq HTTP 429 resolved with Cloudflare Mistral vision
+
+**Production default is now Cloudflare Workers AI · Mistral Small 3.1** (not Groq), selected through the `AI` binding in `wrangler.jsonc`. No API key is requested from visitors or teammates. The public CDC polycystic kidney case was tested end-to-end with structured AI proposals and Clippy's image-aware grossing assistance. Cloudflare's model has a limited daily free allocation; on paid Workers accounts, additional usage can incur charges.
+
+The `/api/vision` endpoint returns a meaningful `rate_limited` response on HTTP 429, never auto-retries exhausted quotas, and preserves existing findings when a new attempt fails. Client image review displays local-QC fallback instructions and ignores late AI responses if the active specimen changed. MiniMax and Kimi remain available as optional, owner-configured providers.
+
+[Model settings and free quota guide](CLIPPY_MODEL_SETUP.md) · [Sponsor handoff](SPONSOR_HANDOFF_V14.md)
+
+---
+
 ## v14 — Image-first Capture DX research workflow
 
 **Live site:** https://mopec-gross-copilot.isabellachandler169.workers.dev/
@@ -10,7 +20,7 @@ New PA-facing features include an **8-image specimen view filmstrip**, original-
 
 The header's **Local review only** option blocks initiating external AI and browser speech from the UI while allowing image viewing, QC, annotations and manual review. This is not a full offline license or a hospital deployment. Additional photo views are treated as unapproved until the operator explicitly authorizes cloud use in Capture.
 
-MiniMax M3.1 Flash and Kimi K3.1 Pro adapters remain available **without switching away from Groq automatically** until owner credentials are configured and medical-image benchmarks have been completed. The model label and `/api/health` report the selected provider.
+MiniMax M3.1 Flash and Kimi K3.1 Pro remain opt-in models. The default now uses Cloudflare Mistral, while Groq is retained as an owner-selected legacy option. The model label and `/api/health` report the selected provider.
 
 **For a complete demonstration script, technical acceptance checklist, and honest dependency matrix**, see [SPONSOR_HANDOFF_V14.md](SPONSOR_HANDOFF_V14.md).
 
