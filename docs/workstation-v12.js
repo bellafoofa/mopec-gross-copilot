@@ -1,7 +1,7 @@
 
 /* Mopec v12 — focused case context and hands-free research workflow.
  * Keeps patient identifiers out of this public prototype.
- * The active model remains Groq until Mopec supplies approved alternatives.
+ * Hosted research model is selected by the Worker; clinical approval remains pending.
  */
 (()=>{'use strict';
 const M=window.Mopec;if(!M)return;
