@@ -76,7 +76,7 @@ function createControls(){
   '</form>';
  document.body.append(dlg);dialog=dlg;
  $('#v12CmdClose').onclick=()=>closeCommands();
- $('#v12CmdForm').onsubmit=e=>{e.preventDefault();executeCommand($('#v12CmdText').value);};
+ $('#v12CmdForm').onsubmit=e=>{e.preventDefault();executeCommand($('#v12CmdText').value,{voice:false});};
  $('#v12CmdMic').onclick=toggleMicrophone;
  const container=$('#v12Examples');
  cmdExamples.forEach(([command,label])=>{const b=document.createElement('button');b.type='button';b.textContent=command;b.title=label;b.onclick=()=>{$('#v12CmdText').value=command;executeCommand(command)};container.append(b)});
@@ -89,7 +89,7 @@ function createControls(){
 function showCommands(){if(!dialog)return;if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal();else dialog.setAttribute('open','');$('#v12CmdText').focus();}
 function closeCommands(){if(recognizer)try{recognizer.stop()}catch{};if(dialog?.open&&typeof dialog.close==='function')dialog.close();else dialog?.removeAttribute('open');}
 function report(message){const el=$('#v12CmdStatus');if(el)el.textContent=message;toast(message);}
-function executeCommand(raw){
+function executeCommand(raw,options={}){
  const c=parseV12Command(raw);
  let result='';
  switch(c.kind){
@@ -112,13 +112,13 @@ function executeCommand(raw){
  case 'ask':
    M.openChat?.(true);$('#chatInput').value=c.question;
    // Explicit ask-command constitutes a user-initiated request; preserve user confirmation when text is typed.
-   $('#chatInput').focus();result='Clippy question prepared. Press Send to submit.';break;
+   $('#chatInput').focus();if(options.voice){queueMicrotask(()=>$('#chatForm')?.requestSubmit());result='Clippy question submitted. Review the response.';}else result='Clippy question prepared. Press Send to submit.';break;
  case 'note':M.nav('capture');$('#captureNotes').value=($('#captureNotes').value?$('#captureNotes').value+'\n':'')+c.note;$('#captureNotes').dispatchEvent(new Event('input',{bubbles:true}));result='Observation added to local capture notes. Verify transcription.';break;
  case 'help':result='Try “Open analysis”, “Analyze image”, “Next step”, “Open Clippy”, “Start camera”, or “Dictate note …”.';break;
  case 'none':result='Enter a workflow command.';break;
  default:result='Command not recognized. Try one of the examples below.';break;
  }
- report(result);refreshDock();return {command:c,result};
+ report(result);refreshDock();if(!['help','none','unknown'].includes(c.kind)){setTimeout(()=>{closeCommands();if(c.kind==='ask'&&!options.voice)$('#chatInput')?.focus({preventScroll:true});},150);}return {command:c,result};
 }
 function toggleMicrophone(){
  if(recognizer){try{recognizer.stop()}catch{}return;}
@@ -131,7 +131,7 @@ function toggleMicrophone(){
  recognizer=rec;
  const button=$('#v12CmdMic');button.textContent='Stop voice';button.classList.add('listening');
  $('#v12CmdStatus').textContent='Listening for one command…';
- rec.onresult=e=>{const sentence=e.results?.[0]?.[0]?.transcript||'';$('#v12CmdText').value=sentence;executeCommand(sentence)};
+ rec.onresult=e=>{const sentence=e.results?.[0]?.[0]?.transcript||'';$('#v12CmdText').value=sentence;executeCommand(sentence,{voice:true})};
  rec.onerror=e=>{$('#v12CmdStatus').textContent='Voice recognition unavailable ('+(e.error||'unknown')+'). Use typed commands instead.'};
  rec.onend=()=>{recognizer=null;button.textContent='Start voice';button.classList.remove('listening')};
  try{rec.start()}catch{recognizer=null;button.textContent='Start voice';button.classList.remove('listening');report('Could not start voice recognition; type a command instead.');}
