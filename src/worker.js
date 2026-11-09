@@ -135,6 +135,7 @@ export default {
      if(request.method!=='GET')return json({error:'GET required'},405);
      return json({configured:!!env.GROQ_API_KEY,provider:'Groq',model:env.GROQ_MODEL||DEFAULT_MODEL,scope:'public research demo',validated_clinical_model:false});
    }
+   if(url.pathname==='/api/guides'){if(request.method!=='GET')return json({error:'GET required'},405);return json(GUIDES.map(g=>({id:g.id,title:g.title,tag:g.tag,version:g.version,content:g.content,checklist:g.checklist,source_url:g.source_url,source_title:g.source_title,approval:'LTU student teaching draft; not approved clinical SOP'})));}
    if(url.pathname==='/api/catalog')return json(SPECIMENS);
    if(url.pathname==='/api/vision')return vision(request,env);
    if(url.pathname==='/api/ask')return ask(request,env);
