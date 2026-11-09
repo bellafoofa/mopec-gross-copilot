@@ -1,0 +1,23 @@
+
+/* v10.1 — workflow validation and PA case-specific quality review */
+.sponsor-review{margin-top:16px}
+.sponsor-review .section-head{align-items:flex-start}
+.sponsor-lead{color:var(--muted);font-size:11px;line-height:1.65;margin:5px 0 12px}
+.priority-row{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(205px,1fr);gap:15px;border-top:1px solid var(--line2);padding:13px 2px;align-items:center}
+.priority-label strong{font-size:12px;display:block;margin-top:6px}
+.priority-label p{color:var(--muted);font-size:11px;line-height:1.6;margin:6px 0 0}
+.tiny-tag{font-size:9px;letter-spacing:.065em;text-transform:uppercase;color:var(--accent2);font-weight:700}
+.priority-entry{display:flex;flex-direction:column;gap:8px}
+.priority-entry select,.priority-entry input{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:9px 10px;color:var(--ink);font-size:11px;min-width:0;max-width:100%}
+.priority-entry input::placeholder{color:var(--muted)}
+.sponsor-bottom{border-top:1px solid var(--line2);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.sponsor-bottom .warn-flag{color:var(--warn)}
+.sponsor-study{margin-top:15px}
+.sponsor-study summary{font-size:13px;font-weight:720;cursor:pointer;list-style:auto;display:list-item}
+.sponsor-study summary .case-pill{margin-left:12px;vertical-align:middle}
+.sponsor-study textarea{display:block;width:100%;margin:7px 0 13px;background:var(--surface);border:1px solid var(--line);border-radius:4px;color:var(--ink);font-size:12px;padding:9px;resize:vertical}
+.sponsor-handoff{margin-top:17px}
+#roiFocus{color:var(--accent2);border-color:var(--line);padding:6px 8px;min-height:32px}
+#roiFocus.active{background:var(--navactive);border-color:var(--accent);font-weight:780}
+@media(max-width:900px){.priority-row{grid-template-columns:1fr;gap:9px}}
+@media(max-width:520px){.sponsor-bottom{align-items:flex-start;flex-direction:column}}
